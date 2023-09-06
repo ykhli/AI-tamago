@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import QAModal from "./QAModal";
+
 import Image from "next/image";
 import { Tooltip } from "react-tooltip";
 
@@ -48,11 +48,7 @@ export default function Examples() {
 
   return (
     <div id="ExampleDiv">
-      <QAModal
-        open={QAModalOpen}
-        setOpen={setQAModalOpen}
-        example={CompParam}
-      />
+
       <ul
         role="list"
         className="mt-14 m-auto max-w-3xl grid grid-cols-1 gap-6 lg:grid-cols-2"
