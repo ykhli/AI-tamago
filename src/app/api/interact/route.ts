@@ -6,21 +6,29 @@ import MemoryManager from "@/app/utils/memory";
 import { rateLimit } from "@/app/utils/rateLimit";
 import { OpenAI } from "langchain/llms/openai";
 import { PromptTemplate } from "langchain/prompts";
-import { INTERACTION } from "@/app/utils/interaction";
+import {
+  eatAnimationPrompt,
+  generateEmojiPrompt,
+  INTERACTION,
+} from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
-import { CallbackManager } from "langchain/callbacks";
+import { eating, idle, superFull } from "@/components/tamagotchiFrames";
 
 dotenv.config({ path: `.env.local` });
 
 // TODO temp status stored in memory for ease of development
 let stats = {
-  eat: 0,
+  eat: 4,
   happy: 0,
 };
 
+let status = "Feeding ...";
+
+const FULL = 5;
 export async function POST(req: Request) {
   const { interactionType } = await req.json();
   console.debug("interactionType", interactionType);
+  let animation = idle;
 
   const model = new OpenAI({
     modelName: "gpt-3.5-turbo-16k",
@@ -30,36 +38,52 @@ export async function POST(req: Request) {
 
   switch (interactionType) {
     case INTERACTION.FEED:
-      console.log("Feeding!");
-      console.log("stats", stats);
-      const chainPrompt =
-        PromptTemplate.fromTemplate(`ONLY return JSON as output. You are a Tamagotchi that only returns JSON, and your owner wanted to feed you. your current status is as follows. Scale is from 0 to 5, if the value equals to 5, it means you have reached the max level of status: 
-        {stats}
+      if (stats.eat === FULL) {
+        console.debug("Full!");
+        animation = superFull;
+        status = "Tamagotchi is full!!";
+      } else {
+        console.debug("Feeding!");
+        console.debug("stats", stats);
+        const eatPrompt = PromptTemplate.fromTemplate(`
+      ONLY return JSON as output. You are a Tamagotchi that only returns JSON, and your owner wanted to feed you.
+    
+      Return in JSON what food you prefer to eat, and your rating of the food after eating it. Rate the food from 1-5, where 1 being you hate the food, and 5 being you loved it. 
       
-        Return in JSON what food you prefer to eat, the updated status. The updated status should be incremented accordingly. 
-        If you don't want to eat anything, return null. Example:
-        {{food: ..., updatedStats: {{eat: 2, happy: 0}}}}`);
+      Example (for demonstration purpose):
+      {{food: sushi, rating: 1}}
+      `);
 
-      const chain = new LLMChain({
-        llm: model,
-        prompt: chainPrompt,
-      });
+        const eatChain = new LLMChain({
+          llm: model,
+          prompt: eatPrompt,
+        });
 
-      const result = await chain
-        .call({ stats: JSON.stringify(stats) })
-        .catch(console.error);
-      const { text } = result!;
-      const food = JSON.parse(text).food;
-      const updatedStats = JSON.parse(text).updatedStats;
-      console.log("food", food);
-      console.log("updatedStatus", updatedStats);
-      stats = updatedStats;
-    // const animationPrompt =
-    //   PromptTemplate.fromTemplate(`You are a Tamagotchi that only speaks JSON, and your owner wanted to feed you. your current status is as follows. Scale is from 0 to 5, if the value equals to 5, it means you have reached the max level of status:
-    //   ${stats}
+        const result = await eatChain
+          .call({ stats: JSON.stringify(stats) })
+          .catch(console.error);
+        const { text } = result!;
+        const food = JSON.parse(text).food;
+        const rating = JSON.parse(text).rating;
+        console.debug(food, rating);
 
-    //   Return in JSON what food you prefer to eat, If you don't want to eat anything, return null. Example:
-    //   {{food: ...}}`);
+        // generate animations
+        const emojiPrompt = PromptTemplate.fromTemplate(generateEmojiPrompt);
+        const emojiChain = new LLMChain({
+          llm: model,
+          prompt: emojiPrompt,
+        });
+        const emojiResult = await emojiChain.call({ food });
+        const emoji = emojiResult!.text;
+        status += emoji;
+
+        const eatingAnimation: string[] = eating.map((frame) => {
+          return frame.replace("{{FOOD_EMOJI}}", emoji);
+        });
+
+        animation = eatingAnimation;
+        stats.eat += 1;
+      }
   }
-  return NextResponse.json("hello");
+  return NextResponse.json({ animation: JSON.stringify(animation), status });
 }
