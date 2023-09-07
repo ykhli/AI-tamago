@@ -6,11 +6,7 @@ import MemoryManager from "@/app/utils/memory";
 import { rateLimit } from "@/app/utils/rateLimit";
 import { OpenAI } from "langchain/llms/openai";
 import { PromptTemplate } from "langchain/prompts";
-import {
-  eatAnimationPrompt,
-  generateEmojiPrompt,
-  INTERACTION,
-} from "@/app/utils/interaction";
+import { generateEmojiPrompt, INTERACTION } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import { eating, idle, superFull } from "@/components/tamagotchiFrames";
 
@@ -83,6 +79,11 @@ export async function POST(req: Request) {
 
         animation = eatingAnimation;
         stats.eat += 1;
+
+        // Decrease happiness if tamagotchi hates the food.
+        if (rating < 2) {
+          stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
+        }
       }
   }
   return NextResponse.json({ animation: JSON.stringify(animation), status });
