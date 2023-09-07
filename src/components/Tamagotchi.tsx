@@ -1,10 +1,13 @@
 "use client";
+import { INTERACTION } from "@/app/utils/interaction";
 import React, { useState, useEffect } from "react";
 import { idle, drinkingCoffee } from "./tamagotchiFrames";
 
 const Tamagotchi: React.FC = () => {
   const [frameIndex, setFrameIndex] = useState<number>(0);
   const [animation, setAnimation] = useState(idle);
+
+  //TODO - call init endpoint to determine if tamagotchi is initialized. if not generate one.
 
   useEffect(() => {
     // Cycle through frames every 1 second
@@ -15,8 +18,22 @@ const Tamagotchi: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const feedTamagotchi = () => {
+  const feedTamagotchi = async (e: any) => {
     // Add logic to feed the Tamagotchi here
+    try {
+      const response = await fetch("/api/interact", {
+        method: "POST",
+        body: JSON.stringify({
+          interactionType: INTERACTION.FEED,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
     setAnimation(drinkingCoffee);
 
     console.log("Tamagotchi fed!");
