@@ -9,6 +9,7 @@ import { PromptTemplate } from "langchain/prompts";
 import { generateEmojiPrompt, INTERACTION } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import { eating, idle, superFull } from "@/components/tamagotchiFrames";
+import { getModel } from "@/app/utils/model"
 
 dotenv.config({ path: `.env.local` });
 
@@ -26,10 +27,7 @@ export async function POST(req: Request) {
   console.debug("interactionType", interactionType);
   let animation = idle;
 
-  const model = new OpenAI({
-    modelName: "gpt-3.5-turbo-16k",
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  });
+  const model = getModel();
   model.verbose = true;
 
   switch (interactionType) {
@@ -47,7 +45,7 @@ export async function POST(req: Request) {
       Return in JSON what food you prefer to eat, and your rating of the food after eating it. Rate the food from 1-5, where 1 being you hate the food, and 5 being you loved it. 
       
       Example (for demonstration purpose):
-      {{food: sushi, rating: 1}}
+      {{"food": "sushi", "rating": 1}}
       `);
 
         const eatChain = new LLMChain({
@@ -59,8 +57,9 @@ export async function POST(req: Request) {
           .call({ stats: JSON.stringify(stats) })
           .catch(console.error);
         const { text } = result!;
-        const food = JSON.parse(text).food;
-        const rating = JSON.parse(text).rating;
+        const resultJson = JSON.parse(text);
+        const food = resultJson.food;
+        const rating = resultJson.rating;
         console.debug(food, rating);
 
         // generate animations

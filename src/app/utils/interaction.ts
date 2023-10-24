@@ -8,7 +8,7 @@ export enum INTERACTION {
   // TODO - add other types
 }
 
-export const generateEmojiPrompt = `Return one or more emojis and nothing else. Generate emoji(s) based on this food: {food}`;
+export const generateEmojiPrompt = `Return one or more unicode emojis and nothing else. Generate emoji(s) based on this food: {food}`;
 
 //TODO - turns out chatgpt is terrible at generating consistent animation frames. Explore more later?
 export const eatAnimationPrompt = `

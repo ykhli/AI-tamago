@@ -1,5 +1,4 @@
 import fs from "fs";
-import { Config } from "twilio/lib/twiml/VoiceResponse";
 
 class ConfigManager {
   private static instance: ConfigManager;
