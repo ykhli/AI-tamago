@@ -8,20 +8,27 @@ import { OpenAI } from "langchain/llms/openai";
 import { PromptTemplate } from "langchain/prompts";
 import { generateEmojiPrompt, INTERACTION } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
-import { eating, idle, superFull } from "@/components/tamagotchiFrames";
-import { getModel } from "@/app/utils/model"
+import {
+  eating,
+  idle,
+  superFull,
+  vomiting,
+} from "@/components/tamagotchiFrames";
+import { getModel } from "@/app/utils/model";
 
 dotenv.config({ path: `.env.local` });
 
 // TODO temp status stored in memory for ease of development
 let stats = {
-  eat: 4,
+  eat: 0,
   happy: 0,
 };
 
+let previousFood: string[] = [];
+
 let status = "Feeding ...";
 
-const FULL = 5;
+const FULL = 10;
 export async function POST(req: Request) {
   const { interactionType } = await req.json();
   console.debug("interactionType", interactionType);
@@ -40,12 +47,16 @@ export async function POST(req: Request) {
         console.debug("Feeding!");
         console.debug("stats", stats);
         const eatPrompt = PromptTemplate.fromTemplate(`
-      ONLY return JSON as output. You are a Tamagotchi that only returns JSON, and your owner wanted to feed you.
+      ONLY return JSON as output. no prose. ONLY JSON!!!
+      
+      You are a Tamagotchi and your owner wanted to feed you.
     
       Return in JSON what food you prefer to eat, and your rating of the food after eating it. Rate the food from 1-5, where 1 being you hate the food, and 5 being you loved it. 
       
       Example (for demonstration purpose):
-      {{"food": "sushi", "rating": 1}}
+      {{"food": "sushi", "emoji": "🍣", "rating": 1, "comment": "I absolutely hate sushi."}}
+
+      DO NOT repeat the previously fed food: ${previousFood.join(", ")}
       `);
 
         const eatChain = new LLMChain({
@@ -59,29 +70,26 @@ export async function POST(req: Request) {
         const { text } = result!;
         const resultJson = JSON.parse(text);
         const food = resultJson.food;
+        previousFood.push(food);
         const rating = resultJson.rating;
-        console.debug(food, rating);
+        const comment = resultJson.comment;
+        const emoji = resultJson.emoji;
+        console.debug(food, rating, comment);
 
-        // generate animations
-        const emojiPrompt = PromptTemplate.fromTemplate(generateEmojiPrompt);
-        const emojiChain = new LLMChain({
-          llm: model,
-          prompt: emojiPrompt,
-        });
-        const emojiResult = await emojiChain.call({ food });
-        const emoji = emojiResult!.text;
-        status += emoji;
+        status = emoji + " " + comment;
 
         const eatingAnimation: string[] = eating.map((frame) => {
           return frame.replace("{{FOOD_EMOJI}}", emoji);
         });
 
         animation = eatingAnimation;
-        stats.eat += 1;
 
         // Decrease happiness if tamagotchi hates the food.
-        if (rating < 2) {
+        if (rating < 3) {
           stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
+          animation = vomiting;
+        } else {
+          stats.eat += 1;
         }
       }
   }

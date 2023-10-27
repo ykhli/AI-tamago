@@ -1,4 +1,5 @@
-import { idle } from "@/components/tamagotchiFrames";
+import { idle, superFull } from "@/components/tamagotchiFrames";
+import { PromptTemplate } from "langchain/prompts";
 
 export enum INTERACTION {
   FEED,
@@ -8,7 +9,10 @@ export enum INTERACTION {
   // TODO - add other types
 }
 
-export const generateEmojiPrompt = `Return one or more unicode emojis and nothing else. Generate emoji(s) based on this food: {food}`;
+export const generateEmojiPrompt = `
+ONLY return JSON as output. no prose. ONLY JSON!!!
+enerate emoji(s) based on this food: {food}. 
+Example: {{"emoji": "🍣"}}`;
 
 //TODO - turns out chatgpt is terrible at generating consistent animation frames. Explore more later?
 export const eatAnimationPrompt = `
