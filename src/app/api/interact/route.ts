@@ -2,11 +2,15 @@ import dotenv from "dotenv";
 import clerk from "@clerk/clerk-sdk-node";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs";
-import MemoryManager from "@/app/utils/memory";
 import { rateLimit } from "@/app/utils/rateLimit";
 import { OpenAI } from "langchain/llms/openai";
+import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
-import { generateEmojiPrompt, INTERACTION } from "@/app/utils/interaction";
+import {
+  foodReviewPrompot,
+  generateEmojiPrompt,
+  INTERACTION,
+} from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import {
   eating,
@@ -15,6 +19,7 @@ import {
   vomiting,
 } from "@/components/tamagotchiFrames";
 import { getModel } from "@/app/utils/model";
+import { metadata } from "@/app/layout";
 
 dotenv.config({ path: `.env.local` });
 
@@ -24,11 +29,11 @@ let stats = {
   happy: 0,
 };
 
-let previousFood: string[] = [];
-
 let status = "Feeding ...";
 
 const FULL = 10;
+const recentFood: string[] = [];
+
 export async function POST(req: Request) {
   const { interactionType } = await req.json();
   console.debug("interactionType", interactionType);
@@ -36,6 +41,7 @@ export async function POST(req: Request) {
 
   const model = getModel();
   model.verbose = true;
+  const memoryManager = await MemoryManager.getInstance();
 
   switch (interactionType) {
     case INTERACTION.FEED:
@@ -56,7 +62,7 @@ export async function POST(req: Request) {
       Example (for demonstration purpose):
       {{"food": "sushi", "emoji": "🍣", "rating": 1, "comment": "I absolutely hate sushi."}}
 
-      DO NOT repeat the previously fed food: ${previousFood.join(", ")}
+      DO NOT repeat the previously fed food: ${recentFood.join(", ")}
       `);
 
         const eatChain = new LLMChain({
@@ -68,15 +74,32 @@ export async function POST(req: Request) {
           .call({ stats: JSON.stringify(stats) })
           .catch(console.error);
         const { text } = result!;
-        const resultJson = JSON.parse(text);
-        const food = resultJson.food;
-        previousFood.push(food);
-        const rating = resultJson.rating;
-        const comment = resultJson.comment;
-        const emoji = resultJson.emoji;
-        console.debug(food, rating, comment);
+        const resultJsonMetadata = JSON.parse(text);
 
-        status = emoji + " " + comment;
+        const food = resultJsonMetadata.food;
+        updateRecentFood(recentFood, food);
+
+        const rating = resultJsonMetadata.rating;
+        const potential_comment = resultJsonMetadata.comment;
+        const emoji = resultJsonMetadata.emoji;
+
+        // const foodMemory = await memoryManager.vectorSearch(food);
+        // console.log("foodMemory", foodMemory.metadata.comment);
+
+        // const foodMemoryChain = new LLMChain({
+        //   llm: model,
+        //   prompt: foodReviewPrompot,
+        // });
+
+        // const foodMemoryResult = await foodMemoryChain.call({
+        //   recentFood,
+        //   food,
+        //   foodMemory.metadata.comment,
+        // });
+
+        await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+
+        status = emoji + " " + potential_comment;
 
         const eatingAnimation: string[] = eating.map((frame) => {
           return frame.replace("{{FOOD_EMOJI}}", emoji);
@@ -84,6 +107,7 @@ export async function POST(req: Request) {
 
         animation = eatingAnimation;
 
+        // TODO - this should probably be deleted later. LLM should decide once in a while
         // Decrease happiness if tamagotchi hates the food.
         if (rating < 3) {
           stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
@@ -91,7 +115,19 @@ export async function POST(req: Request) {
         } else {
           stats.eat += 1;
         }
+
+        await memoryManager.saveInteraction(
+          INTERACTION.FEED,
+          resultJsonMetadata
+        );
       }
   }
   return NextResponse.json({ animation: JSON.stringify(animation), status });
+}
+
+function updateRecentFood(recent: any, food: string) {
+  if (recent.length > 5) {
+    recent = recent.shift();
+  }
+  recent.push(food);
 }

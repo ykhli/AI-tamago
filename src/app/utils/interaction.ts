@@ -9,6 +9,17 @@ export enum INTERACTION {
   // TODO - add other types
 }
 
+export const foodReviewPrompot = PromptTemplate.fromTemplate(`
+Respond ONLY in JSON. No prose. 
+
+You are a Tamagotchi who likes to eat. Here are the recent foods you ate: {recentFood}
+Previously, you had {food} and here's what you thought about it {foodMemory}.
+
+Tell me more about how you felt about eating this food.
+
+Response format: {{comment: "I love eating sushi"}}
+`);
+
 export const generateEmojiPrompt = `
 ONLY return JSON as output. no prose. ONLY JSON!!!
 enerate emoji(s) based on this food: {food}. 
