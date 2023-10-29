@@ -39,6 +39,7 @@ const Tamagotchi: React.FC = () => {
       const responseJSON = JSON.parse(responseText);
       const animation = JSON.parse(responseJSON.animation);
       const status = responseJSON.status;
+
       setAnimation(animation);
       setTamaStatus(status);
     } catch (e) {
@@ -46,10 +47,12 @@ const Tamagotchi: React.FC = () => {
     }
 
     console.log("Tamagotchi fed!");
+
+    // TODO - there may be a race condition here if user clicks the button too fast?
     setTimeout(() => {
       setAnimation(idle);
       setTamaStatus(DEFAULT_STATUS);
-    }, 8000);
+    }, 9000);
   };
 
   const checkStatus = () => {
