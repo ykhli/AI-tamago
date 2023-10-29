@@ -3,6 +3,8 @@ import { INTERACTION } from "@/app/utils/interaction";
 import React, { useState, useEffect } from "react";
 import { idle, drinkingCoffee } from "./tamagotchiFrames";
 
+import "../index.css";
+
 const DEFAULT_STATUS = ":)";
 const Tamagotchi: React.FC = () => {
   const [frameIndex, setFrameIndex] = useState<number>(0);
@@ -56,9 +58,9 @@ const Tamagotchi: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen w-screen bg-slate-50">
+    <div className="flex flex-col justify-center items-center h-screen w-screen bg-slate-50 tamago-frame">
       <div className="text-center mb-2">Status: {tamaStatus}</div>
-      <div className="p-4 border border-black rounded-lg  h-[260px] overflow-auto">
+      <div className="p-4 border border-black rounded-lg  h-[250px] overflow-auto tamago-screen">
         <div className="flex justify-between mb-4">
           <button
             onClick={feedTamagotchi}
