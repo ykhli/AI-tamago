@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .tamago-frame {
-  background-image: url("/Tamagotchi.svg");
+  /* background-image: url("/Tamagotchi.svg"); */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -14,12 +14,12 @@
   align-items: center;
 }
 
-.tamago-screen {
+/* .tamago-screen {
   background-color: white;
   margin-top: 86px;
   border: none;
   margin-left: -11px;
-}
+} */
 
 /* @font-face {
   font-family: 'Upheaval Pro';

@@ -4,84 +4,77 @@ import { PineconeClient } from "@pinecone-database/pinecone";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
+import { INTERACTION } from "./interaction";
+import { pipeline } from "@xenova/transformers";
 
-export type CompanionKey = {
-  companionName: string;
-  modelName: string;
-  userId: string;
-};
+const embedding_endpoint = process.env.SUPABASE_EMBEDDING_ENDPOINT!;
 
 class MemoryManager {
   private static instance: MemoryManager;
-  private history: Redis;
-  private vectorDBClient: PineconeClient | SupabaseClient;
+
+  private dbClient: SupabaseClient;
 
   public constructor() {
-    this.history = Redis.fromEnv();
-    if (process.env.VECTOR_DB === "pinecone") {
-      this.vectorDBClient = new PineconeClient();
-    } else {
-      const auth = {
-        detectSessionInUrl: false,
-        persistSession: false,
-        autoRefreshToken: false,
-      };
-      const url = process.env.SUPABASE_URL!;
-      const privateKey = process.env.SUPABASE_PRIVATE_KEY!;
-      this.vectorDBClient = createClient(url, privateKey, { auth });
-    }
+    const auth = {
+      detectSessionInUrl: false,
+      persistSession: false,
+      autoRefreshToken: false,
+    };
+    const url = process.env.SUPABASE_URL!;
+    const privateKey = process.env.SUPABASE_PRIVATE_KEY!;
+    this.dbClient = createClient(url, privateKey, { auth });
   }
 
-  public async init() {
-    if (this.vectorDBClient instanceof PineconeClient) {
-      await this.vectorDBClient.init({
-        apiKey: process.env.PINECONE_API_KEY!,
-        environment: process.env.PINECONE_ENVIRONMENT!,
-      });
-    }
+  public async init() {}
+
+  public async saveToMemory(content: string, metadata: any) {
+    const embedding = await this.generateEmbedding(content);
+    const supabaseClient = <SupabaseClient>this.dbClient;
+    const error = await supabaseClient
+      .from("documents")
+      .insert({ embedding, metadata, content });
+
+    console.debug("INFO: saved to Supabase.");
+    console.debug("INFO: error", error);
   }
 
-  public async vectorSearch(
-    recentChatHistory: string,
-    companionFileName: string
-  ) {
-    if (process.env.VECTOR_DB === "pinecone") {
-      console.log("INFO: using Pinecone for vector search.");
-      const pineconeClient = <PineconeClient>this.vectorDBClient;
+  public async generateEmbedding(content: string) {
+    console.log("generateEmbedding", content);
+    const generateEmbedding = await pipeline(
+      "feature-extraction",
+      "Xenova/all-MiniLM-L6-v2"
+    );
 
-      const pineconeIndex = pineconeClient.Index(
-        process.env.PINECONE_INDEX! || ""
-      );
+    // Generate a vector using Transformers.js
+    const output = await generateEmbedding(content, {
+      pooling: "mean",
+      normalize: true,
+    });
 
-      const vectorStore = await PineconeStore.fromExistingIndex(
-        new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY }),
-        { pineconeIndex }
-      );
+    // Extract the embedding output
+    const embedding = Array.from(output.data);
+    return embedding;
+  }
 
-      const similarDocs = await vectorStore
-        .similaritySearch(recentChatHistory, 3, { fileName: companionFileName })
-        .catch((err) => {
-          console.log("WARNING: failed to get vector search results.", err);
-        });
-      return similarDocs;
-    } else {
-      console.log("INFO: using Supabase for vector search.");
-      const supabaseClient = <SupabaseClient>this.vectorDBClient;
-      const vectorStore = await SupabaseVectorStore.fromExistingIndex(
-        new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY }),
-        {
-          client: supabaseClient,
-          tableName: "documents",
-          queryName: "match_documents",
-        }
-      );
-      const similarDocs = await vectorStore
-        .similaritySearch(recentChatHistory, 3)
-        .catch((err) => {
-          console.log("WARNING: failed to get vector search results.", err);
-        });
-      return similarDocs;
+  public async vectorSearch(contentToSearch: string) {
+    const embedding = await this.generateEmbedding(contentToSearch);
+    const result = await this.dbClient.rpc("match_documents", {
+      query_embedding: embedding,
+      match_count: 1,
+    });
+
+    if (result.error) {
+      console.error("ERROR: ", result.error);
     }
+    return result.data[0] || "";
+  }
+
+  public async saveInteraction(interaction: INTERACTION, metadata: any) {
+    await this.dbClient.from("llamagotchi_interactions").insert({
+      interaction,
+      metadata,
+      ts: new Date().toISOString(),
+    });
   }
 
   public static async getInstance(): Promise<MemoryManager> {
@@ -92,59 +85,11 @@ class MemoryManager {
     return MemoryManager.instance;
   }
 
-  private generateRedisCompanionKey(companionKey: CompanionKey): string {
-    return `${companionKey.companionName}-${companionKey.modelName}-${companionKey.userId}`;
-  }
+  public async writeToHistory(text: string) {}
 
-  public async writeToHistory(text: string, companionKey: CompanionKey) {
-    if (!companionKey || typeof companionKey.userId == "undefined") {
-      console.log("Companion key set incorrectly");
-      return "";
-    }
+  public async readLatestHistory() {}
 
-    const key = this.generateRedisCompanionKey(companionKey);
-    const result = await this.history.zadd(key, {
-      score: Date.now(),
-      member: text,
-    });
-
-    return result;
-  }
-
-  public async readLatestHistory(companionKey: CompanionKey): Promise<string> {
-    if (!companionKey || typeof companionKey.userId == "undefined") {
-      console.log("Companion key set incorrectly");
-      return "";
-    }
-
-    const key = this.generateRedisCompanionKey(companionKey);
-    let result = await this.history.zrange(key, 0, Date.now(), {
-      byScore: true,
-    });
-
-    result = result.slice(-30).reverse();
-    const recentChats = result.reverse().join("\n");
-    return recentChats;
-  }
-
-  public async seedChatHistory(
-    seedContent: String,
-    delimiter: string = "\n",
-    companionKey: CompanionKey
-  ) {
-    const key = this.generateRedisCompanionKey(companionKey);
-    if (await this.history.exists(key)) {
-      console.log("User already has chat history");
-      return;
-    }
-
-    const content = seedContent.split(delimiter);
-    let counter = 0;
-    for (const line of content) {
-      await this.history.zadd(key, { score: counter, member: line });
-      counter += 1;
-    }
-  }
+  public async seedChatHistory() {}
 }
 
 export default MemoryManager;
