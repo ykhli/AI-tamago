@@ -23,6 +23,7 @@
     "eslint": "8.42.0",
     "eslint-config-next": "13.4.4",
     "hnswlib-node": "^1.4.2",
+    "inngest": "^3.6.0",
     "langchain": "^0.0.144",
     "next": "13.4.4",
     "postcss": "8.4.24",

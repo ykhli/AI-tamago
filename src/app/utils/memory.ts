@@ -70,7 +70,7 @@ class MemoryManager {
   }
 
   public async saveInteraction(interaction: INTERACTION, metadata: any) {
-    await this.dbClient.from("llamagotchi_interactions").insert({
+    await this.dbClient.from("tamagotchi_interactions").insert({
       interaction,
       metadata,
       ts: new Date().toISOString(),
