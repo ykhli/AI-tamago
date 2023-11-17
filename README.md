@@ -12,17 +12,8 @@ All client side tamagotchi code is in Tamagotchi.tsx
 ## Local Setup
 
 `brew install supabase/tap/supabase`
+
 `supabase start`
-
-To serve embedding generation function:
-`supabase functions serve`
-
-Example request to get embeddings
-`curl --request POST 'http://localhost:54321/functions/v1/embed' \
-  --header 'Authorization: Bearer ANON_KEY' \
-  --header 'Content-Type: application/json' \
-  --data '{ "input": "HELLO WORLD!!!" }'
-`
 
 To run migrations or reset database -- seed.sql and migrations will run
 `supabase db reset`
