@@ -83,8 +83,9 @@ export async function POST(req: Request) {
         const potential_comment = resultJsonMetadata.comment;
         const emoji = resultJsonMetadata.emoji;
 
-        // const foodMemory = await memoryManager.vectorSearch(food);
-        // console.log("foodMemory", foodMemory.metadata.comment);
+        // TODO - this is for testing
+        const foodMemory = await memoryManager.vectorSearch(food);
+        console.log("foodMemory", foodMemory.metadata.comment);
 
         // const foodMemoryChain = new LLMChain({
         //   llm: model,

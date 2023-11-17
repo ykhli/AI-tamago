@@ -5,6 +5,7 @@ import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { INTERACTION } from "./interaction";
+import { pipeline } from "@xenova/transformers";
 
 const embedding_endpoint = process.env.SUPABASE_EMBEDDING_ENDPOINT!;
 
@@ -38,22 +39,21 @@ class MemoryManager {
   }
 
   public async generateEmbedding(content: string) {
-    const headers = new Headers();
-    headers.append(
-      "Authorization",
-      "Bearer " + process.env.SUPABASE_PRIVATE_KEY
+    console.log("generateEmbedding", content);
+    const generateEmbedding = await pipeline(
+      "feature-extraction",
+      "Xenova/all-MiniLM-L6-v2"
     );
-    headers.append("Content-Type", "application/json");
-    const body = JSON.stringify({
-      input: content,
+
+    // Generate a vector using Transformers.js
+    const output = await generateEmbedding(content, {
+      pooling: "mean",
+      normalize: true,
     });
-    const response = await fetch(embedding_endpoint, {
-      method: "POST",
-      headers,
-      body,
-    });
-    const json = await response.json();
-    return json.embedding;
+
+    // Extract the embedding output
+    const embedding = Array.from(output.data);
+    return embedding;
   }
 
   public async vectorSearch(contentToSearch: string) {
