@@ -46,13 +46,18 @@ class StateManager {
     const prompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. ONLY JSON!!!
       
-      You are a Tamagotchi, and here's the last 10 things you did and their time stamp:
+      The time now is ${new Date().toISOString()}.
+
+      You are a Tamagotchi, and here's the last 10 things you did and their timestamps:
       {lastInteractions}
-      You get hungry and unhappy and unhealthy over time. Return your current status in JSON.
+
+      Your current status: 
+      {status}
+      You get hungry, unhealthy and unhappy gradually if you have not been fed in the past hour.  Return your current status in JSON. Include a comment explaining why you feel this way.
 
      
       Example (for demonstration purpose) - Max value for each field is 10.
-      {{ "hunger": 0, "happiness": 0, "health": 0}}
+      {{ "hunger": 0, "happiness": 0, "health": 0, "comment": "(add a comment based on context)"}}
 
       `);
     console.log("lastInteractions", lastInteractions);
@@ -70,7 +75,10 @@ class StateManager {
     });
 
     const result = await stateChain
-      .call({ lastInteractions: lastInteractionsString })
+      .call({
+        lastInteractions: lastInteractionsString,
+        status: JSON.stringify(status![0].status),
+      })
       .catch(console.error);
 
     const { text } = result!;

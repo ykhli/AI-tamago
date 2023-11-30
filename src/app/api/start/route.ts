@@ -5,8 +5,9 @@ import StateManager from "@/app/utils/state";
 
 dotenv.config({ path: `.env.local` });
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const stateManager = await StateManager.getInstance();
+  // TODO
   // Generate a new Tamagotchi and fill in its preferences
 
   stateManager.update();
