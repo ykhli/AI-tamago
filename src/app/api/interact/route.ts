@@ -2,9 +2,14 @@ import dotenv from "dotenv";
 import { NextResponse } from "next/server";
 import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
-import { handlPlay, INTERACTION } from "@/app/utils/interaction";
+import {
+  handleDiscipline,
+  handlPlay,
+  INTERACTION,
+} from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import {
+  discipline,
   eating,
   idle,
   playing,
@@ -36,7 +41,6 @@ export async function POST(req: Request) {
 
   switch (interactionType) {
     case INTERACTION.FEED:
-      const currentStatus = await stateManager.getLatestStatus();
       if (tamagoStatus.hunger == 10) {
         console.debug("Full!");
         animation = superFull;
@@ -48,9 +52,7 @@ export async function POST(req: Request) {
       
       You are a virtual pet and your owner wanted to feed you.
 
-      Your current status: ${JSON.stringify(
-        currentStatus
-      )}. If you don't feel happy or healthy, you can refuse to interact. 
+      Your current status: {currentStatus}. If you don't feel happy or healthy, you can refuse to interact. 
     
       Return in JSON what food you prefer to eat, and your rating of the food after eating it. Rate the food from 1-5, where 1 being you hate the food, and 5 being you loved it. 
       
@@ -70,7 +72,9 @@ export async function POST(req: Request) {
           prompt: eatPrompt,
         });
 
-        const result = await eatChain.call({}).catch(console.error);
+        const result = await eatChain
+          .call({ currentStatus: JSON.stringify(tamagoStatus) })
+          .catch(console.error);
         const { text } = result!;
         const resultJsonMetadata = JSON.parse(text);
 
@@ -114,6 +118,27 @@ export async function POST(req: Request) {
           resultJsonMetadata
         );
       }
+      break;
+    case INTERACTION.DISCIPLINE:
+      status = "Disciplining ... :( ";
+      let disciplineResult = await handleDiscipline(
+        model,
+        memoryManager,
+        stateManager
+      );
+
+      console.log("disciplineResult emoji", disciplineResult.emoji);
+      const disciplineEmoij = disciplineResult.emoji
+        ? disciplineResult.emoji
+        : "😑";
+      status = disciplineEmoij + " " + disciplineResult.comment;
+
+      const disciplineAnimation: string[] = discipline.map((frame) => {
+        return frame.replace("{{DISCIPLINE_EMOJI}}", disciplineEmoij);
+      });
+
+      animation = disciplineAnimation;
+
       break;
     case INTERACTION.PLAY:
       let resultJsonMetadata = await handlPlay(

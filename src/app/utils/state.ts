@@ -33,13 +33,7 @@ class StateManager {
     const status = await this.getLatestStatus();
     console.log("tamagotchiStatus", status);
     const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
-    const lastInteractions = (
-      await this.dbClient
-        .from("tamagotchi_interactions")
-        .select()
-        .order("updatedat", { ascending: false })
-        .limit(10)
-    ).data!;
+    const lastInteractions = (await this.getLastInteractions()) || [];
     const timeNow = new Date().getTime();
 
     const prompt = PromptTemplate.fromTemplate(`
@@ -55,6 +49,8 @@ class StateManager {
 
       You get hungry if you haven't had food you liked. You get unhappy if you haven't been played within the last hour. 
       You get unhealthy if you ate too much, ate something you hate, or simply caught cold from visiting friends. 
+      You are unhappy when you are disciplined, sick, or are not clean. You are generally in a good mood after bath. 
+      You die when all your values are 0. 
       
       The time now is ${new Date().toISOString()}.
       Return your current status in JSON based on your interaction data above. Include a comment explaining why you feel this way.
@@ -101,6 +97,17 @@ class StateManager {
     });
   }
 
+  public async getLastInteractions() {
+    const { data, error } = await this.dbClient
+      .from("tamagotchi_interactions")
+      .select()
+      .order("updatedat", { ascending: false })
+      .limit(10);
+    if (error) {
+      console.error(error);
+    }
+    return data;
+  }
   public async getLatestStatus() {
     const { data, error } = await this.dbClient
       .from("tamagotchi_status")
@@ -108,7 +115,7 @@ class StateManager {
       .order("updatedat", { ascending: false })
       .limit(1);
     if (error) {
-      console.error(error);
+      console.error("error: ", error);
     }
     return data![0].status;
   }

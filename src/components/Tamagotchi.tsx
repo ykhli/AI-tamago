@@ -135,6 +135,31 @@ const Tamagotchi: React.FC = () => {
     }, 9000);
   };
 
+  const handleDiscipline = async () => {
+    setTamaStatus("Discipling...");
+    setIsInteracting(true);
+    try {
+      const response = await fetch("/api/interact", {
+        method: "POST",
+        body: JSON.stringify({
+          interactionType: INTERACTION.DISCIPLINE,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const responseText = await response.text();
+      handleResponse(responseText);
+    } catch (e) {
+      console.log(e);
+    }
+    setTimeout(() => {
+      setAnimation(idle);
+      setTamaStatus(DEFAULT_STATUS);
+      setIsInteracting(false);
+    }, 9000);
+  };
+
   const checkStatus = () => {
     if (!isInteracting) {
       setTamaStatus("Checking Status...");
@@ -216,7 +241,7 @@ const Tamagotchi: React.FC = () => {
             📋
           </button>
           <button
-            onClick={feedTamagotchi}
+            onClick={handleDiscipline}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
             style={{ width: "80px" }}
           >

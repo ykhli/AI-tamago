@@ -204,6 +204,59 @@ export const sick = [
    💉`,
 ];
 
+export const discipline = [
+  `
+     /\\_/\\  
+    ( o.o ) 
+     > ^ <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( o.o ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+];
+
 export const playing = [
   `
    /\\_/\\  
