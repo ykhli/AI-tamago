@@ -2,12 +2,7 @@ import dotenv from "dotenv";
 import { NextResponse } from "next/server";
 import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
-import {
-  foodReviewPrompot,
-  generateEmojiPrompt,
-  handlPlay,
-  INTERACTION,
-} from "@/app/utils/interaction";
+import { handlPlay, INTERACTION } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import {
   eating,
@@ -41,6 +36,7 @@ export async function POST(req: Request) {
 
   switch (interactionType) {
     case INTERACTION.FEED:
+      const currentStatus = await stateManager.getLatestStatus();
       if (tamagoStatus.hunger == 10) {
         console.debug("Full!");
         animation = superFull;
@@ -50,12 +46,21 @@ export async function POST(req: Request) {
         const eatPrompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. ONLY JSON!!!
       
-      You are a Tamagotchi and your owner wanted to feed you.
+      You are a virtual pet and your owner wanted to feed you.
+
+      Your current status: ${JSON.stringify(
+        currentStatus
+      )}. If you don't feel happy or healthy, you can refuse to interact. 
     
       Return in JSON what food you prefer to eat, and your rating of the food after eating it. Rate the food from 1-5, where 1 being you hate the food, and 5 being you loved it. 
       
       Example (for demonstration purpose):
-      {{"food": "sushi", "emoji": "🍣", "rating": 1, "comment": "I absolutely hate sushi."}}
+      {{"refuse": false, "food": "sushi", "emoji": "🍣", "rating": 5, "comment": "I absolutely love sushi."}}
+
+      If you don't want to eat, set "refuse" to true:
+      Example (for demonstration purpose):
+      {{"refuse": true,  "food": "sushi", "emoji": "🍣","rating": 5,  "comment": "I'm not in the mood to eat."}}
+
 
       DO NOT repeat the previously fed food: ${recentFood.join(", ")}
       `);
@@ -70,6 +75,9 @@ export async function POST(req: Request) {
         const resultJsonMetadata = JSON.parse(text);
 
         const food = resultJsonMetadata.food;
+        const refuseToEat = resultJsonMetadata.refuse
+          ? resultJsonMetadata.refuse
+          : false;
         updateRecentFood(recentFood, food);
 
         const potential_comment = resultJsonMetadata.comment;
@@ -94,9 +102,11 @@ export async function POST(req: Request) {
 
         status = emoji + " " + potential_comment;
 
-        const eatingAnimation: string[] = eating.map((frame) => {
-          return frame.replace("{{FOOD_EMOJI}}", emoji);
-        });
+        const eatingAnimation: string[] = refuseToEat
+          ? vomiting
+          : eating.map((frame) => {
+              return frame.replace("{{FOOD_EMOJI}}", emoji);
+            });
 
         animation = eatingAnimation;
         await stateManager.saveInteraction(

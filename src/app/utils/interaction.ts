@@ -19,15 +19,24 @@ export async function handlPlay(
   stateManager: StateManager
 ) {
   console.debug("Playing!");
+  const currentStatus = await stateManager.getLatestStatus();
   const playPrompt = PromptTemplate.fromTemplate(`
 ONLY return JSON as output. no prose. ONLY JSON!!!
 
 You are a virtual pet and your owner wants to play with you.
 
+Your current status: ${JSON.stringify(
+    currentStatus
+  )}. If you don't feel happy or healthy, you can refuse to interact. 
+
 Return in JSON what you prefer to play, and your rating of the activity. Rate the activity from 1-5, where 1 being you hate the activity, and 5 being you loved it. 
 
 Example (for demonstration purpose):
 {{"activity": "playing basketball", "emoji": "🏀", "rating": 1, "comment": "I absolutely hate playing basketball."}}
+
+If you don't want to play, set "refuse" to true:
+Example (for demonstration purpose):
+{{"refuse": true,  "activity": "playing basketball", "emoji": "🏀", "rating": 1, "comment": "Not in the mood. Bye."}}
 `);
 
   const playChain = new LLMChain({
