@@ -1,37 +1,30 @@
 import dotenv from "dotenv";
-import clerk from "@clerk/clerk-sdk-node";
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs";
-import { rateLimit } from "@/app/utils/rateLimit";
-import { OpenAI } from "langchain/llms/openai";
 import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
 import {
-  foodReviewPrompot,
-  generateEmojiPrompt,
+  handleDiscipline,
+  handlPlay,
   INTERACTION,
 } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import {
+  discipline,
   eating,
   idle,
+  playing,
+  sick,
   superFull,
   vomiting,
 } from "@/components/tamagotchiFrames";
 import { getModel } from "@/app/utils/model";
 import { metadata } from "@/app/layout";
+import StateManager from "@/app/utils/state";
 
 dotenv.config({ path: `.env.local` });
 
-// TODO temp status stored in memory for ease of development
-let stats = {
-  eat: 0,
-  happy: 0,
-};
-
 let status = "Feeding ...";
 
-const FULL = 10;
 const recentFood: string[] = [];
 
 export async function POST(req: Request) {
@@ -42,25 +35,34 @@ export async function POST(req: Request) {
   const model = getModel();
   model.verbose = true;
   const memoryManager = await MemoryManager.getInstance();
+  const stateManager = await StateManager.getInstance();
+  const tamagoStatus = await stateManager.getLatestStatus();
+  console.log("tamagotchiStatus", tamagoStatus);
 
   switch (interactionType) {
     case INTERACTION.FEED:
-      if (stats.eat === FULL) {
+      if (tamagoStatus.hunger == 10) {
         console.debug("Full!");
         animation = superFull;
         status = "Tamagotchi is full!!";
       } else {
         console.debug("Feeding!");
-        console.debug("stats", stats);
         const eatPrompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. ONLY JSON!!!
       
-      You are a Tamagotchi and your owner wanted to feed you.
+      You are a virtual pet and your owner wanted to feed you.
+
+      Your current status: {currentStatus}. If you don't feel happy or healthy, you can refuse to interact. 
     
       Return in JSON what food you prefer to eat, and your rating of the food after eating it. Rate the food from 1-5, where 1 being you hate the food, and 5 being you loved it. 
       
       Example (for demonstration purpose):
-      {{"food": "sushi", "emoji": "🍣", "rating": 1, "comment": "I absolutely hate sushi."}}
+      {{"refuse": false, "food": "sushi", "emoji": "🍣", "rating": 5, "comment": "I absolutely love sushi."}}
+
+      If you don't want to eat, set "refuse" to true:
+      Example (for demonstration purpose):
+      {{"refuse": true,  "food": "sushi", "emoji": "🍣","rating": 5,  "comment": "I'm not in the mood to eat."}}
+
 
       DO NOT repeat the previously fed food: ${recentFood.join(", ")}
       `);
@@ -71,15 +73,17 @@ export async function POST(req: Request) {
         });
 
         const result = await eatChain
-          .call({ stats: JSON.stringify(stats) })
+          .call({ currentStatus: JSON.stringify(tamagoStatus) })
           .catch(console.error);
         const { text } = result!;
         const resultJsonMetadata = JSON.parse(text);
 
         const food = resultJsonMetadata.food;
+        const refuseToEat = resultJsonMetadata.refuse
+          ? resultJsonMetadata.refuse
+          : false;
         updateRecentFood(recentFood, food);
 
-        const rating = resultJsonMetadata.rating;
         const potential_comment = resultJsonMetadata.comment;
         const emoji = resultJsonMetadata.emoji;
 
@@ -102,26 +106,65 @@ export async function POST(req: Request) {
 
         status = emoji + " " + potential_comment;
 
-        const eatingAnimation: string[] = eating.map((frame) => {
-          return frame.replace("{{FOOD_EMOJI}}", emoji);
-        });
+        const eatingAnimation: string[] = refuseToEat
+          ? vomiting
+          : eating.map((frame) => {
+              return frame.replace("{{FOOD_EMOJI}}", emoji);
+            });
 
         animation = eatingAnimation;
-
-        // TODO - this should probably be deleted later. LLM should decide once in a while
-        // Decrease happiness if tamagotchi hates the food.
-        // if (rating < 3) {
-        //   stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
-        //   animation = vomiting;
-        // } else {
-        //   stats.eat += 1;
-        // }
-
-        await memoryManager.saveInteraction(
+        await stateManager.saveInteraction(
           INTERACTION.FEED,
           resultJsonMetadata
         );
       }
+      break;
+    case INTERACTION.DISCIPLINE:
+      status = "Disciplining ... :( ";
+      let disciplineResult = await handleDiscipline(
+        model,
+        memoryManager,
+        stateManager
+      );
+
+      console.log("disciplineResult emoji", disciplineResult.emoji);
+      const disciplineEmoij = disciplineResult.emoji
+        ? disciplineResult.emoji
+        : "😑";
+      status = disciplineEmoij + " " + disciplineResult.comment;
+
+      const disciplineAnimation: string[] = discipline.map((frame) => {
+        return frame.replace("{{DISCIPLINE_EMOJI}}", disciplineEmoij);
+      });
+
+      animation = disciplineAnimation;
+
+      break;
+    case INTERACTION.PLAY:
+      let resultJsonMetadata = await handlPlay(
+        model,
+        memoryManager,
+        stateManager
+      );
+
+      const emoji = resultJsonMetadata.emoji ? resultJsonMetadata.emoji : "🛝";
+      status = emoji + " " + resultJsonMetadata.comment;
+
+      const playAnimation: string[] = playing.map((frame) => {
+        return frame.replace("{{PLAY_EMOJI}}", emoji);
+      });
+
+      animation = playAnimation;
+
+      break;
+    case INTERACTION.GO_TO_HOSPITAL:
+      console.debug("Hospital!");
+
+      await stateManager.saveInteraction(INTERACTION.GO_TO_HOSPITAL, {});
+      status = "To the Hospital...";
+
+      animation = sick;
+      break;
   }
   return NextResponse.json({ animation: JSON.stringify(animation), status });
 }

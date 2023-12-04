@@ -1,14 +1,14 @@
 create table tamagotchi_status (
     id serial primary key,
     status jsonb,
-    updatedAt timestamp
+    updatedat timestamp
 );
 
 create table tamagotchi_interactions (
     id serial primary key,
     interaction varchar(255),
     metadata jsonb,
-    ts timestamp
+    updatedat timestamp
 );
 
 -- Creating vector store

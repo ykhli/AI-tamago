@@ -1,12 +1,117 @@
 import { idle, superFull } from "@/components/tamagotchiFrames";
 import { PromptTemplate } from "langchain/prompts";
+import { LLMChain } from "langchain/chains";
+import MemoryManager from "./memory";
+import StateManager from "./state";
 
 export enum INTERACTION {
   FEED,
   PLAY,
   LIGHTS_OUT,
   BATH,
+  GO_TO_HOSPITAL,
+  DISCIPLINE,
   // TODO - add other types
+}
+
+export async function handleDiscipline(
+  model: any,
+  memoryManager: MemoryManager,
+  stateManager: StateManager
+) {
+  console.debug("Discipline :(");
+  const currentStatus = await stateManager.getLatestStatus();
+  const lastInteractions = await stateManager.getLastInteractions();
+  const disciplinePrompt = PromptTemplate.fromTemplate(`
+ONLY return JSON as output. no prose. ONLY JSON!!!
+
+You are a virtual pet and your owner is disciplining you for being naughty. 
+
+Your current status: {currentStatus}. 
+Your previous interactions: {lastInteractions}
+
+Return in JSON on what your thoughts are on the discipline, and if you think the discipline was effective and for good reason. Rate the it from 1-5, where 1 being the discipline was for no reason, and 5 being you understood the reasoning. Also return in emoji in how it makes you feel.
+
+Example (for demonstration purpose):
+{{"emoji": "😡", "rating": 1, "comment": "What was that for???!!"}}
+
+
+Example (for demonstration purpose):
+{{"emoji": "😖", "rating": 3, "comment": "Ok i will try not to poop everywhere."}}
+`);
+
+  const disciplineChain = new LLMChain({
+    llm: model,
+    prompt: disciplinePrompt,
+  });
+
+  const result = await disciplineChain
+    .call({
+      currentStatus: JSON.stringify(currentStatus),
+      lastInteractions: JSON.stringify(lastInteractions),
+    })
+    .catch(console.error);
+  const { text } = result!;
+  const resultJsonMetadata = JSON.parse(text);
+
+  const potential_comment = resultJsonMetadata.comment;
+
+  await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+
+  await stateManager.saveInteraction(
+    INTERACTION.DISCIPLINE,
+    resultJsonMetadata
+  );
+  return resultJsonMetadata;
+}
+
+export async function handlPlay(
+  model: any,
+  memoryManager: MemoryManager,
+  stateManager: StateManager
+) {
+  console.debug("Playing!");
+  const currentStatus = JSON.stringify(await stateManager.getLatestStatus());
+  const playPrompt = PromptTemplate.fromTemplate(`
+ONLY return JSON as output. no prose. ONLY JSON!!!
+
+You are a virtual pet and your owner wants to play with you.
+
+Your current status: {currentStatus}. If you don't feel happy or healthy, you can refuse to interact. 
+
+Return in JSON what you prefer to play, and your rating of the activity. Rate the activity from 1-5, where 1 being you hate the activity, and 5 being you loved it. 
+
+Example (for demonstration purpose):
+{{"activity": "playing basketball", "emoji": "🏀", "rating": 1, "comment": "I absolutely hate playing basketball."}}
+
+If you don't want to play, set "refuse" to true:
+Example (for demonstration purpose):
+{{"refuse": true,  "activity": "playing basketball", "emoji": "🏀", "rating": 1, "comment": "Not in the mood. Bye."}}
+`);
+
+  const playChain = new LLMChain({
+    llm: model,
+    prompt: playPrompt,
+  });
+
+  const result = await playChain.call({ currentStatus }).catch(console.error);
+  const { text } = result!;
+  const resultJsonMetadata = JSON.parse(text);
+
+  const potential_comment = resultJsonMetadata.comment;
+
+  await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+
+  await stateManager.saveInteraction(INTERACTION.PLAY, resultJsonMetadata);
+  return resultJsonMetadata;
+}
+
+export async function handleFeed(
+  model: any,
+  memoryManager: MemoryManager,
+  stateManager: StateManager
+) {
+  //TODO
 }
 
 export const foodReviewPrompot = PromptTemplate.fromTemplate(`

@@ -4,7 +4,6 @@ import { pipeline } from "@xenova/transformers";
 import { PromptTemplate } from "langchain/prompts";
 import { getModel } from "./model";
 import { LLMChain } from "langchain/chains";
-import { data } from "autoprefixer";
 
 const embedding_endpoint = process.env.SUPABASE_EMBEDDING_ENDPOINT!;
 
@@ -31,22 +30,10 @@ class StateManager {
 
   public async update() {
     console.log("supabase url", process.env.SUPABASE_URL);
-    const status = (
-      await this.dbClient
-        .from("tamagotchi_status")
-        .select()
-        .order("updatedat", { ascending: false })
-        .limit(1)
-    ).data!;
-    console.log("status", status);
-    const age = status![0].age ? status![0].age + 1 : 1; // 1 tick older!
-    const lastInteractions = (
-      await this.dbClient
-        .from("tamagotchi_interactions")
-        .select()
-        .order("ts", { ascending: true })
-        .limit(10)
-    ).data!;
+    const status = await this.getLatestStatus();
+    console.log("tamagotchiStatus", status);
+    const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
+    const lastInteractions = (await this.getLastInteractions()) || [];
     const timeNow = new Date().getTime();
 
     const prompt = PromptTemplate.fromTemplate(`
@@ -62,6 +49,8 @@ class StateManager {
 
       You get hungry if you haven't had food you liked. You get unhappy if you haven't been played within the last hour. 
       You get unhealthy if you ate too much, ate something you hate, or simply caught cold from visiting friends. 
+      You are unhappy when you are disciplined, sick, or are not clean. You are generally in a good mood after bath. 
+      You die when all your values are 0. 
       
       The time now is ${new Date().toISOString()}.
       Return your current status in JSON based on your interaction data above. Include a comment explaining why you feel this way.
@@ -76,7 +65,9 @@ class StateManager {
       .map((interaction) => {
         return `Interaction: ${
           INTERACTION[interaction.interaction]
-        }, ${JSON.stringify(interaction.metadata)},  at ${interaction.ts}`;
+        }, ${JSON.stringify(interaction.metadata)},  at ${
+          interaction.updatedat
+        }`;
       })
       .join("\n ");
 
@@ -85,14 +76,13 @@ class StateManager {
       prompt: prompt,
     });
 
-    const previousStatus = status![0].status;
     const result = await stateChain
       .call({
         lastInteractions: lastInteractionsString,
         status: JSON.stringify({
-          health: previousStatus.health,
-          happiness: previousStatus.happiness,
-          hunger: previousStatus.hunger,
+          health: status.health,
+          happiness: status.happiness,
+          hunger: status.hunger,
         }),
       })
       .catch(console.error);
@@ -101,13 +91,53 @@ class StateManager {
     const resultJsonMetadata = JSON.parse(text);
     // TODO - validate or retry here
 
-    const { error } = await this.dbClient
+    await this.updateTamagotchiStatus({
+      ...resultJsonMetadata,
+      age,
+    });
+  }
+
+  public async getLastInteractions() {
+    const { data, error } = await this.dbClient
+      .from("tamagotchi_interactions")
+      .select()
+      .order("updatedat", { ascending: false })
+      .limit(10);
+    if (error) {
+      console.error(error);
+    }
+    return data;
+  }
+  public async getLatestStatus() {
+    const { data, error } = await this.dbClient
       .from("tamagotchi_status")
+      .select()
+      .order("updatedat", { ascending: false })
+      .limit(1);
+    if (error) {
+      console.error("error: ", error);
+    }
+    return data![0].status;
+  }
+
+  public async saveInteraction(interaction: INTERACTION, metadata: any) {
+    const { error } = await this.dbClient
+      .from("tamagotchi_interactions")
       .insert({
-        status: { ...resultJsonMetadata, age },
+        interaction,
+        metadata,
         updatedat: new Date().toISOString(),
       });
+    if (error) {
+      console.log(error);
+    }
+  }
 
+  public async updateTamagotchiStatus(newStatus: any) {
+    const { error } = await this.dbClient.from("tamagotchi_status").insert({
+      status: newStatus,
+      updatedat: new Date().toISOString(),
+    });
     console.log(error);
   }
 

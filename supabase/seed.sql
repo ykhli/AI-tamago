@@ -4,12 +4,12 @@
 insert into tamagotchi_status
     (status, updatedat)
 values
-    ('{"happiness": 0, "hunger": 0, "health": 0, "age": 1}', NOW());
+    ('{"happiness": 5, "hunger": 5, "health": 5, "age": 1}', NOW());
 
 
 
 insert into tamagotchi_interactions
-    (interaction, metadata)
+    (interaction, metadata, updatedat)
 values
     ('BORN', '{}',  NOW())
 

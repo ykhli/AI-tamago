@@ -150,6 +150,168 @@ export const eating: string[] = [
      > ^ <  
    `,
 ];
+export const death = [
+  //TODO
+];
+
+export const sick = [
+  `
+     /\\_/\\  
+    ( o.o ) 
+     > ^ <  
+   💉`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+   💉`,
+  `
+     /\\_/\\  
+    ( T.T ) 
+     > ^ <  
+   💉`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+   💉`,
+  `
+     /\\_/\\  
+    ( T.T ) 
+     > ^ <  
+   💉`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+   💉`,
+  `
+     /\\_/\\  
+    ( T.T ) 
+     > ^ <  
+   💉`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+   💉`,
+  `
+     /\\_/\\  
+    ( T.T ) 
+     > ^ <  
+   💉`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+   💉`,
+];
+
+export const discipline = [
+  `
+     /\\_/\\  
+    ( o.o ) 
+     > ^ <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+    {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( -.- ) 
+     >   <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( X.X ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+  `
+     /\\_/\\  
+    ( o.o ) 
+     > ^ <  
+     {{DISCIPLINE_EMOJI}}`,
+];
+
+export const playing = [
+  `
+   /\\_/\\  
+  ( o.o ) 
+   >{{PLAY_EMOJI}}<  
+  `,
+  `
+     /\\_/\\  
+    ( o.o ) 
+     >{{PLAY_EMOJI}}<  
+  `,
+  `
+       /\\_/\\  
+      ( o.o ) 
+       >{{PLAY_EMOJI}}<  
+  `,
+  `
+        /\\_/\\  
+       ( o.o ) 
+        >{{PLAY_EMOJI}}<  
+  `,
+  `
+          /\\_/\\  
+         ( o.o ) 
+          >{{PLAY_EMOJI}}<  
+  `,
+  `
+        /\\_/\\  
+       ( o.o ) 
+        >{{PLAY_EMOJI}}<  
+  `,
+  `
+             /\\_/\\  
+            ( o.o ) 
+             >{{PLAY_EMOJI}}<  
+  `,
+  `
+             /\\_/\\  
+            ( o.o ) 
+             >{{PLAY_EMOJI}}<  
+  `,
+  `
+          /\\_/\\  
+         ( o.o ) 
+          >{{PLAY_EMOJI}}<  
+  `,
+  `
+        /\\_/\\  
+       ( o.o ) 
+        >{{PLAY_EMOJI}}<  
+  `,
+];
 
 export const idle = [
   `
