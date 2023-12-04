@@ -62,14 +62,6 @@ class MemoryManager {
     return result.data[0] || "";
   }
 
-  public async saveInteraction(interaction: INTERACTION, metadata: any) {
-    await this.dbClient.from("tamagotchi_interactions").insert({
-      interaction,
-      metadata,
-      ts: new Date().toISOString(),
-    });
-  }
-
   public static async getInstance(): Promise<MemoryManager> {
     if (!MemoryManager.instance) {
       MemoryManager.instance = new MemoryManager();

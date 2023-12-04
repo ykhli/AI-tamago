@@ -9,6 +9,8 @@ export enum INTERACTION {
   // TODO - add other types
 }
 
+export function feedTamagotchi() {}
+
 export const foodReviewPrompot = PromptTemplate.fromTemplate(`
 Respond ONLY in JSON. No prose. 
 

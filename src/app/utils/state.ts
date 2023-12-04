@@ -31,13 +31,7 @@ class StateManager {
 
   public async update() {
     console.log("supabase url", process.env.SUPABASE_URL);
-    const status = (
-      await this.dbClient
-        .from("tamagotchi_status")
-        .select()
-        .order("updatedat", { ascending: false })
-        .limit(1)
-    ).data!;
+    const status = await this.getLatestStatus();
     console.log("status", status);
     const age = status![0].age ? status![0].age + 1 : 1; // 1 tick older!
     const lastInteractions = (
@@ -101,13 +95,40 @@ class StateManager {
     const resultJsonMetadata = JSON.parse(text);
     // TODO - validate or retry here
 
+    await this.updateTamagotchiStatus({
+      ...resultJsonMetadata,
+      age,
+    });
+  }
+
+  public async getLatestStatus() {
+    return (
+      await this.dbClient
+        .from("tamagotchi_status")
+        .select()
+        .order("updatedat", { ascending: false })
+        .limit(1)
+    ).data![0].status;
+  }
+
+  public async saveInteraction(interaction: INTERACTION, metadata: any) {
     const { error } = await this.dbClient
-      .from("tamagotchi_status")
+      .from("tamagotchi_interactions")
       .insert({
-        status: { ...resultJsonMetadata, age },
+        interaction,
+        metadata,
         updatedat: new Date().toISOString(),
       });
+    if (error) {
+      console.log(error);
+    }
+  }
 
+  public async updateTamagotchiStatus(newStatus: any) {
+    const { error } = await this.dbClient.from("tamagotchi_status").insert({
+      status: newStatus,
+      updatedat: new Date().toISOString(),
+    });
     console.log(error);
   }
 

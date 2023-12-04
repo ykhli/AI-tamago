@@ -20,18 +20,12 @@ import {
 } from "@/components/tamagotchiFrames";
 import { getModel } from "@/app/utils/model";
 import { metadata } from "@/app/layout";
+import StateManager from "@/app/utils/state";
 
 dotenv.config({ path: `.env.local` });
 
-// TODO temp status stored in memory for ease of development
-let stats = {
-  eat: 0,
-  happy: 0,
-};
-
 let status = "Feeding ...";
 
-const FULL = 10;
 const recentFood: string[] = [];
 
 export async function POST(req: Request) {
@@ -42,16 +36,18 @@ export async function POST(req: Request) {
   const model = getModel();
   model.verbose = true;
   const memoryManager = await MemoryManager.getInstance();
+  const stateManager = await StateManager.getInstance();
+  const tamagoStatus = await stateManager.getLatestStatus();
+  console.log("tamagotchiStatus", tamagoStatus);
 
   switch (interactionType) {
     case INTERACTION.FEED:
-      if (stats.eat === FULL) {
+      if (tamagoStatus.hunger == 10) {
         console.debug("Full!");
         animation = superFull;
         status = "Tamagotchi is full!!";
       } else {
         console.debug("Feeding!");
-        console.debug("stats", stats);
         const eatPrompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. ONLY JSON!!!
       
@@ -70,16 +66,13 @@ export async function POST(req: Request) {
           prompt: eatPrompt,
         });
 
-        const result = await eatChain
-          .call({ stats: JSON.stringify(stats) })
-          .catch(console.error);
+        const result = await eatChain.call({}).catch(console.error);
         const { text } = result!;
         const resultJsonMetadata = JSON.parse(text);
 
         const food = resultJsonMetadata.food;
         updateRecentFood(recentFood, food);
 
-        const rating = resultJsonMetadata.rating;
         const potential_comment = resultJsonMetadata.comment;
         const emoji = resultJsonMetadata.emoji;
 
@@ -107,17 +100,7 @@ export async function POST(req: Request) {
         });
 
         animation = eatingAnimation;
-
-        // TODO - this should probably be deleted later. LLM should decide once in a while
-        // Decrease happiness if tamagotchi hates the food.
-        // if (rating < 3) {
-        //   stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
-        //   animation = vomiting;
-        // } else {
-        //   stats.eat += 1;
-        // }
-
-        await memoryManager.saveInteraction(
+        await stateManager.saveInteraction(
           INTERACTION.FEED,
           resultJsonMetadata
         );

@@ -22,6 +22,14 @@ const Tamagotchi: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleResponse = (responseText: string) => {
+    const responseJSON = JSON.parse(responseText);
+    const animation = JSON.parse(responseJSON.animation);
+    const status = responseJSON.status;
+    setAnimation(animation);
+    setTamaStatus(status);
+  };
+
   const feedTamagotchi = async (e: any) => {
     // Add logic to feed the Tamagotchi here
     setTamaStatus("Feeding...");
@@ -36,12 +44,7 @@ const Tamagotchi: React.FC = () => {
         },
       });
       const responseText = await response.text();
-      const responseJSON = JSON.parse(responseText);
-      const animation = JSON.parse(responseJSON.animation);
-      const status = responseJSON.status;
-
-      setAnimation(animation);
-      setTamaStatus(status);
+      handleResponse(responseText);
     } catch (e) {
       console.log(e);
     }
@@ -69,12 +72,7 @@ const Tamagotchi: React.FC = () => {
         },
       });
       const responseText = await response.text();
-      const responseJSON = JSON.parse(responseText);
-      const animation = JSON.parse(responseJSON.animation);
-      const status = responseJSON.status;
-
-      setAnimation(animation);
-      setTamaStatus(status);
+      handleResponse(responseText);
     } catch (e) {
       console.log(e);
     }

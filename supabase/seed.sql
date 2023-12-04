@@ -9,7 +9,7 @@ values
 
 
 insert into tamagotchi_interactions
-    (interaction, metadata)
+    (interaction, metadata, updatedat)
 values
     ('BORN', '{}',  NOW())
 
