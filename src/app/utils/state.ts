@@ -4,7 +4,6 @@ import { pipeline } from "@xenova/transformers";
 import { PromptTemplate } from "langchain/prompts";
 import { getModel } from "./model";
 import { LLMChain } from "langchain/chains";
-import { data } from "autoprefixer";
 
 const embedding_endpoint = process.env.SUPABASE_EMBEDDING_ENDPOINT!;
 
@@ -32,13 +31,13 @@ class StateManager {
   public async update() {
     console.log("supabase url", process.env.SUPABASE_URL);
     const status = await this.getLatestStatus();
-    console.log("status", status);
-    const age = status![0].age ? status![0].age + 1 : 1; // 1 tick older!
+    console.log("tamagotchiStatus", status);
+    const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
     const lastInteractions = (
       await this.dbClient
         .from("tamagotchi_interactions")
         .select()
-        .order("ts", { ascending: true })
+        .order("updatedat", { ascending: false })
         .limit(10)
     ).data!;
     const timeNow = new Date().getTime();
@@ -70,7 +69,9 @@ class StateManager {
       .map((interaction) => {
         return `Interaction: ${
           INTERACTION[interaction.interaction]
-        }, ${JSON.stringify(interaction.metadata)},  at ${interaction.ts}`;
+        }, ${JSON.stringify(interaction.metadata)},  at ${
+          interaction.updatedat
+        }`;
       })
       .join("\n ");
 
@@ -79,14 +80,13 @@ class StateManager {
       prompt: prompt,
     });
 
-    const previousStatus = status![0].status;
     const result = await stateChain
       .call({
         lastInteractions: lastInteractionsString,
         status: JSON.stringify({
-          health: previousStatus.health,
-          happiness: previousStatus.happiness,
-          hunger: previousStatus.hunger,
+          health: status.health,
+          happiness: status.happiness,
+          hunger: status.hunger,
         }),
       })
       .catch(console.error);

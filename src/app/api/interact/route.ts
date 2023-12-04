@@ -1,20 +1,19 @@
 import dotenv from "dotenv";
-import clerk from "@clerk/clerk-sdk-node";
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs";
-import { rateLimit } from "@/app/utils/rateLimit";
-import { OpenAI } from "langchain/llms/openai";
 import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
 import {
   foodReviewPrompot,
   generateEmojiPrompt,
+  handlPlay,
   INTERACTION,
 } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import {
   eating,
   idle,
+  playing,
+  sick,
   superFull,
   vomiting,
 } from "@/components/tamagotchiFrames";
@@ -105,6 +104,32 @@ export async function POST(req: Request) {
           resultJsonMetadata
         );
       }
+      break;
+    case INTERACTION.PLAY:
+      let resultJsonMetadata = await handlPlay(
+        model,
+        memoryManager,
+        stateManager
+      );
+
+      const emoji = resultJsonMetadata.emoji ? resultJsonMetadata.emoji : "🛝";
+      status = emoji + " " + resultJsonMetadata.comment;
+
+      const playAnimation: string[] = playing.map((frame) => {
+        return frame.replace("{{PLAY_EMOJI}}", emoji);
+      });
+
+      animation = playAnimation;
+
+      break;
+    case INTERACTION.GO_TO_HOSPITAL:
+      console.debug("Hospital!");
+
+      await stateManager.saveInteraction(INTERACTION.GO_TO_HOSPITAL, {});
+      status = "To the Hospital...";
+
+      animation = sick;
+      break;
   }
   return NextResponse.json({ animation: JSON.stringify(animation), status });
 }

@@ -26,6 +26,7 @@ const Tamagotchi: React.FC = () => {
     const responseJSON = JSON.parse(responseText);
     const animation = JSON.parse(responseJSON.animation);
     const status = responseJSON.status;
+    setFrameIndex(0);
     setAnimation(animation);
     setTamaStatus(status);
   };
@@ -81,6 +82,29 @@ const Tamagotchi: React.FC = () => {
       setTamaStatus(DEFAULT_STATUS);
     }, 9000);
   };
+
+  const treatSickTamagotchi = async (e: any) => {
+    try {
+      const response = await fetch("/api/interact", {
+        method: "POST",
+        body: JSON.stringify({
+          interactionType: INTERACTION.GO_TO_HOSPITAL,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const responseText = await response.text();
+      handleResponse(responseText);
+    } catch (e) {
+      console.log(e);
+    }
+    setTimeout(() => {
+      setAnimation(idle);
+      setTamaStatus(DEFAULT_STATUS);
+    }, 9000);
+  };
+
   const checkStatus = () => {
     // Add logic to check the Tamagotchi's status here
     console.log("Tamagotchi status checked!");
@@ -89,30 +113,33 @@ const Tamagotchi: React.FC = () => {
   return (
     <div className="flex flex-col justify-center items-center h-screen w-screen bg-slate-50 tamago-frame">
       <div className="text-center mb-2">Status: {tamaStatus}</div>
-      <div className="p-4 border border-black rounded-lg  h-[250px] overflow-auto tamago-screen">
+      <div className="min-w-[300px] p-4 border border-black rounded-lg  h-[250px] overflow-auto tamago-screen">
         <div className="flex justify-between mb-4">
           <button
             onClick={feedTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
+            style={{ width: "80px" }}
           >
             🍴
           </button>
           {/* TODO - all other actions */}
-          <button
+          {/* <button
             onClick={feedTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
           >
             💡
-          </button>
+          </button> */}
           <button
             onClick={playWithTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
+            style={{ width: "80px" }}
           >
             🎯
           </button>
           <button
-            onClick={feedTamagotchi}
+            onClick={treatSickTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
+            style={{ width: "80px" }}
           >
             💉
           </button>
@@ -122,27 +149,30 @@ const Tamagotchi: React.FC = () => {
           <button
             onClick={feedTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
+            style={{ width: "80px" }}
           >
             🛀
           </button>
           <button
             onClick={feedTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
+            style={{ width: "80px" }}
           >
             📋
           </button>
           <button
             onClick={feedTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
+            style={{ width: "80px" }}
           >
             😡
           </button>
-          <button
+          {/* <button
             onClick={feedTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
           >
             👥
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

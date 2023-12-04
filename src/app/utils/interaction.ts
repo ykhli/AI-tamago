@@ -1,15 +1,59 @@
 import { idle, superFull } from "@/components/tamagotchiFrames";
 import { PromptTemplate } from "langchain/prompts";
+import { LLMChain } from "langchain/chains";
+import MemoryManager from "./memory";
+import StateManager from "./state";
 
 export enum INTERACTION {
   FEED,
   PLAY,
   LIGHTS_OUT,
   BATH,
+  GO_TO_HOSPITAL,
   // TODO - add other types
 }
 
-export function feedTamagotchi() {}
+export async function handlPlay(
+  model: any,
+  memoryManager: MemoryManager,
+  stateManager: StateManager
+) {
+  console.debug("Playing!");
+  const playPrompt = PromptTemplate.fromTemplate(`
+ONLY return JSON as output. no prose. ONLY JSON!!!
+
+You are a virtual pet and your owner wants to play with you.
+
+Return in JSON what you prefer to play, and your rating of the activity. Rate the activity from 1-5, where 1 being you hate the activity, and 5 being you loved it. 
+
+Example (for demonstration purpose):
+{{"activity": "playing basketball", "emoji": "🏀", "rating": 1, "comment": "I absolutely hate playing basketball."}}
+`);
+
+  const playChain = new LLMChain({
+    llm: model,
+    prompt: playPrompt,
+  });
+
+  const result = await playChain.call({}).catch(console.error);
+  const { text } = result!;
+  const resultJsonMetadata = JSON.parse(text);
+
+  const potential_comment = resultJsonMetadata.comment;
+
+  await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+
+  await stateManager.saveInteraction(INTERACTION.PLAY, resultJsonMetadata);
+  return resultJsonMetadata;
+}
+
+export async function handleFeed(
+  model: any,
+  memoryManager: MemoryManager,
+  stateManager: StateManager
+) {
+  //TODO
+}
 
 export const foodReviewPrompot = PromptTemplate.fromTemplate(`
 Respond ONLY in JSON. No prose. 
