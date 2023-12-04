@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+.fixed-container {
+  width: 200px; /* Set your desired fixed width */
+  height: 150px; /* Set your desired fixed height */
+  overflow: hidden; /* Prevent content overflow */
+  border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
+}
+
 .tamago-frame {
   /* background-image: url("/Tamagotchi.svg"); */
   background-size: cover;

@@ -102,13 +102,15 @@ class StateManager {
   }
 
   public async getLatestStatus() {
-    return (
-      await this.dbClient
-        .from("tamagotchi_status")
-        .select()
-        .order("updatedat", { ascending: false })
-        .limit(1)
-    ).data![0].status;
+    const { data, error } = await this.dbClient
+      .from("tamagotchi_status")
+      .select()
+      .order("updatedat", { ascending: false })
+      .limit(1);
+    if (error) {
+      console.error(error);
+    }
+    return data![0].status;
   }
 
   public async saveInteraction(interaction: INTERACTION, metadata: any) {

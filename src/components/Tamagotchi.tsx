@@ -8,18 +8,42 @@ import "../index.css";
 const DEFAULT_STATUS = ":)";
 const Tamagotchi: React.FC = () => {
   const [frameIndex, setFrameIndex] = useState<number>(0);
-  const [animation, setAnimation] = useState(idle);
+  const [tamagotchiState, setTamagotchiState] = useState<any>({});
+  const [animation, setAnimation] = useState<string[]>(idle);
   const [tamaStatus, setTamaStatus] = useState(DEFAULT_STATUS);
+  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
 
   //TODO - call init endpoint to determine if tamagotchi is initialized. if not generate one.
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/getState", { method: "POST" });
+        if (response.ok) {
+          const jsonData = await response.json();
+          setTamagotchiState(jsonData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
     // Cycle through frames every 1 second
-    const interval = setInterval(() => {
+    const frameInterval = setInterval(() => {
       setFrameIndex((prevIndex) => (prevIndex + 1) % idle.length);
     }, 1000);
 
-    return () => clearInterval(interval);
+    // Fetch data on component mount
+    fetchData();
+
+    // Start polling data every N seconds (adjust the interval as needed)
+    const pollInterval = setInterval(fetchData, 5000); // Poll every 5 seconds
+
+    return () => {
+      clearInterval(pollInterval);
+      clearInterval(frameInterval);
+    };
   }, []);
 
   const handleResponse = (responseText: string) => {
@@ -32,6 +56,7 @@ const Tamagotchi: React.FC = () => {
   };
 
   const feedTamagotchi = async (e: any) => {
+    setIsInteracting(true);
     // Add logic to feed the Tamagotchi here
     setTamaStatus("Feeding...");
     try {
@@ -56,12 +81,14 @@ const Tamagotchi: React.FC = () => {
     setTimeout(() => {
       setAnimation(idle);
       setTamaStatus(DEFAULT_STATUS);
+      setIsInteracting(false);
     }, 9000);
   };
 
   const playWithTamagotchi = async (e: any) => {
     // Add logic to feed the Tamagotchi here
     setTamaStatus("Playing...");
+    setIsInteracting(true);
     try {
       const response = await fetch("/api/interact", {
         method: "POST",
@@ -80,10 +107,12 @@ const Tamagotchi: React.FC = () => {
     setTimeout(() => {
       setAnimation(idle);
       setTamaStatus(DEFAULT_STATUS);
+      setIsInteracting(false);
     }, 9000);
   };
 
   const treatSickTamagotchi = async (e: any) => {
+    setIsInteracting(true);
     try {
       const response = await fetch("/api/interact", {
         method: "POST",
@@ -102,18 +131,24 @@ const Tamagotchi: React.FC = () => {
     setTimeout(() => {
       setAnimation(idle);
       setTamaStatus(DEFAULT_STATUS);
+      setIsInteracting(false);
     }, 9000);
   };
 
   const checkStatus = () => {
-    // Add logic to check the Tamagotchi's status here
-    console.log("Tamagotchi status checked!");
+    if (!isInteracting) {
+      setTamaStatus("Checking Status...");
+      setCheckingStatus(true);
+      setTimeout(() => {
+        setCheckingStatus(false);
+      }, 9000);
+    }
   };
 
   return (
     <div className="flex flex-col justify-center items-center h-screen w-screen bg-slate-50 tamago-frame">
       <div className="text-center mb-2">Status: {tamaStatus}</div>
-      <div className="min-w-[300px] p-4 border border-black rounded-lg  h-[250px] overflow-auto tamago-screen">
+      <div className="min-w-[300px] p-4 border border-black rounded-lg  h-[330px] overflow-auto tamago-screen">
         <div className="flex justify-between mb-4">
           <button
             onClick={feedTamagotchi}
@@ -144,7 +179,27 @@ const Tamagotchi: React.FC = () => {
             💉
           </button>
         </div>
-        <pre className="text-center">{animation[frameIndex]}</pre>
+        {/* Tamagotchi display */}
+        <div className="flex justify-center">
+          <div className="flex items-center justify-center w-64 h-48 overflow-hidden">
+            {!checkingStatus && (
+              <pre className="text-center">{animation[frameIndex]}</pre>
+            )}
+
+            {checkingStatus && (
+              <pre
+                className="text-left overflow-x-hidden overflow-y-auto whitespace-normal"
+                style={{ maxHeight: "100%", maxWidth: "100%" }}
+              >
+                Age: {tamagotchiState.age || "No age"} <br />
+                Happiness: {tamagotchiState.happiness || "No happiness"} <br />
+                Hunger: {tamagotchiState.hunger || "No hunger"} <br />
+                Health: {tamagotchiState.health || "No health"} <br />
+                {'"' + tamagotchiState.comment || "No comments" + '"'}
+              </pre>
+            )}
+          </div>
+        </div>
         <div className="flex justify-between">
           <button
             onClick={feedTamagotchi}
@@ -154,7 +209,7 @@ const Tamagotchi: React.FC = () => {
             🛀
           </button>
           <button
-            onClick={feedTamagotchi}
+            onClick={checkStatus}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
             style={{ width: "80px" }}
           >
