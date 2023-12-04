@@ -11,15 +11,15 @@ export async function POST(req: Request) {
   // Generate a new Tamagotchi and fill in its preferences
 
   stateManager.update();
-  // inngest.createFunction(
-  //   { id: "tick" },
-  //   { cron: "0 * * * * *" },
-  //   async ({ step }) => {
-  //     await step.run("tick", async () => {
-
-  //     });
-  //   }
-  // );
+  inngest.createFunction(
+    { id: "tick" },
+    { cron: "*/30 * * * * " },
+    async ({ step }) => {
+      await step.run("inngest-tick", async () => {
+        return await stateManager.update();
+      });
+    }
+  );
 
   return NextResponse.json({});
 }

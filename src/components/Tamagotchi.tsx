@@ -228,6 +228,7 @@ const Tamagotchi: React.FC = () => {
                 Happiness: {tamagotchiState.happiness || "No happiness"} <br />
                 Hunger: {tamagotchiState.hunger || "No hunger"} <br />
                 Health: {tamagotchiState.health || "No health"} <br />
+                🚽: {tamagotchiState.poop || "👍"} <br />
                 {'"' + tamagotchiState.comment || "No comments" + '"'}
               </pre>
             )}
