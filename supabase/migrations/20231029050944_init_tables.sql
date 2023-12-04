@@ -1,15 +1,11 @@
 create table tamagotchi_status (
-    tamagotchiName varchar(30) primary key,
+    id serial primary key,
     status jsonb,
-    -- happiness int,
-    -- hunger int,
-    -- health int,
-    -- age int,
-    -- other int,
     updatedAt timestamp
 );
 
 create table tamagotchi_interactions (
+    id serial primary key,
     interaction varchar(255),
     metadata jsonb,
     ts timestamp

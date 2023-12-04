@@ -1,13 +1,6 @@
-import { Redis } from "@upstash/redis";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { PineconeClient } from "@pinecone-database/pinecone";
-import { PineconeStore } from "langchain/vectorstores/pinecone";
-import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { INTERACTION } from "./interaction";
 import { pipeline } from "@xenova/transformers";
-
-const embedding_endpoint = process.env.SUPABASE_EMBEDDING_ENDPOINT!;
 
 class MemoryManager {
   private static instance: MemoryManager;

@@ -31,10 +31,15 @@ class StateManager {
 
   public async update() {
     console.log("supabase url", process.env.SUPABASE_URL);
-    const status = (await this.dbClient.from("tamagotchi_status").select())
-      .data;
+    const status = (
+      await this.dbClient
+        .from("tamagotchi_status")
+        .select()
+        .order("updatedat", { ascending: false })
+        .limit(1)
+    ).data!;
     console.log("status", status);
-    const age = status![0].age + 1; // 1 tick older!
+    const age = status![0].age ? status![0].age + 1 : 1; // 1 tick older!
     const lastInteractions = (
       await this.dbClient
         .from("tamagotchi_interactions")
@@ -42,21 +47,27 @@ class StateManager {
         .order("ts", { ascending: true })
         .limit(10)
     ).data!;
+    const timeNow = new Date().getTime();
 
     const prompt = PromptTemplate.fromTemplate(`
-      ONLY return JSON as output. no prose. ONLY JSON!!!
+      ONLY return JSON as output. no prose. 
       
-      The time now is ${new Date().toISOString()}.
-
-      You are a Tamagotchi, and here's the last 10 things you did and their timestamps:
+      You are a virtual pet, and here's the last 10 interactions you had and their timestamps:
       {lastInteractions}
 
-      Your current status: 
+      If there is no interaction above, it means you haven't had interactions with your owner for a while. Your happiness, health and hunger level will be affected accordingly. 
+
+      Your previous status: 
       {status}
-      You get hungry, unhealthy and unhappy gradually if you have not been fed in the past hour.  Return your current status in JSON. Include a comment explaining why you feel this way.
+
+      You get hungry if you haven't had food you liked. You get unhappy if you haven't been played within the last hour. 
+      You get unhealthy if you ate too much, ate something you hate, or simply caught cold from visiting friends. 
+      
+      The time now is ${new Date().toISOString()}.
+      Return your current status in JSON based on your interaction data above. Include a comment explaining why you feel this way.
 
      
-      Example (for demonstration purpose) - Max value for each field is 10.
+      Example (for demonstration purpose) - Max value for each field is 10, min value for each field is 0.
       {{ "hunger": 0, "happiness": 0, "health": 0, "comment": "(add a comment based on context)"}}
 
       `);
@@ -74,25 +85,28 @@ class StateManager {
       prompt: prompt,
     });
 
+    const previousStatus = status![0].status;
     const result = await stateChain
       .call({
         lastInteractions: lastInteractionsString,
-        status: JSON.stringify(status![0].status),
+        status: JSON.stringify({
+          health: previousStatus.health,
+          happiness: previousStatus.happiness,
+          hunger: previousStatus.hunger,
+        }),
       })
       .catch(console.error);
 
     const { text } = result!;
     const resultJsonMetadata = JSON.parse(text);
     // TODO - validate or retry here
-    const newStatus = {
-      status: { ...resultJsonMetadata, age },
-      updatedat: new Date().toISOString(),
-    };
 
     const { error } = await this.dbClient
       .from("tamagotchi_status")
-      .update({ ...newStatus })
-      .eq("tamagotchiname", "tamagotchi");
+      .insert({
+        status: { ...resultJsonMetadata, age },
+        updatedat: new Date().toISOString(),
+      });
 
     console.log(error);
   }

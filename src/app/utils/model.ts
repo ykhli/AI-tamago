@@ -32,6 +32,7 @@ export function getModel() {
     return new Ollama({
       baseUrl: endpoint,
       model: "codellama",
+      format: "json",
     });
   } else {
     //default to OpenAI
