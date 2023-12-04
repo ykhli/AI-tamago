@@ -1,7 +1,7 @@
 "use client";
 import { INTERACTION } from "@/app/utils/interaction";
 import React, { useState, useEffect } from "react";
-import { idle, drinkingCoffee } from "./tamagotchiFrames";
+import { idle, drinkingCoffee, death } from "./tamagotchiFrames";
 
 import "../index.css";
 
@@ -23,6 +23,7 @@ const Tamagotchi: React.FC = () => {
         if (response.ok) {
           const jsonData = await response.json();
           setTamagotchiState(jsonData);
+          handleDeath(jsonData, pollInterval);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -55,6 +56,13 @@ const Tamagotchi: React.FC = () => {
     setTamaStatus(status);
   };
 
+  const handleDeath = (jsonData: any, pollInterval: NodeJS.Timer) => {
+    if (jsonData.death) {
+      setAnimation(death);
+      setTamaStatus("Dead :(");
+      clearInterval(pollInterval);
+    }
+  };
   const feedTamagotchi = async (e: any) => {
     setIsInteracting(true);
     // Add logic to feed the Tamagotchi here

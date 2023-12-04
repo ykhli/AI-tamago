@@ -150,6 +150,9 @@ export const eating: string[] = [
      > ^ <  
    `,
 ];
+export const death = [
+  //TODO
+];
 
 export const sick = [
   `
