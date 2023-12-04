@@ -55,6 +55,34 @@ const Tamagotchi: React.FC = () => {
     }, 9000);
   };
 
+  const playWithTamagotchi = async (e: any) => {
+    // Add logic to feed the Tamagotchi here
+    setTamaStatus("Playing...");
+    try {
+      const response = await fetch("/api/interact", {
+        method: "POST",
+        body: JSON.stringify({
+          interactionType: INTERACTION.PLAY,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const responseText = await response.text();
+      const responseJSON = JSON.parse(responseText);
+      const animation = JSON.parse(responseJSON.animation);
+      const status = responseJSON.status;
+
+      setAnimation(animation);
+      setTamaStatus(status);
+    } catch (e) {
+      console.log(e);
+    }
+    setTimeout(() => {
+      setAnimation(idle);
+      setTamaStatus(DEFAULT_STATUS);
+    }, 9000);
+  };
   const checkStatus = () => {
     // Add logic to check the Tamagotchi's status here
     console.log("Tamagotchi status checked!");
@@ -79,7 +107,7 @@ const Tamagotchi: React.FC = () => {
             💡
           </button>
           <button
-            onClick={feedTamagotchi}
+            onClick={playWithTamagotchi}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
           >
             🎯

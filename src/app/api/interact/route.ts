@@ -84,8 +84,8 @@ export async function POST(req: Request) {
         const emoji = resultJsonMetadata.emoji;
 
         // TODO - this is for testing
-        const foodMemory = await memoryManager.vectorSearch(food);
-        console.log("foodMemory", foodMemory.metadata.comment);
+        // const foodMemory = await memoryManager.vectorSearch(food);
+        // console.log("foodMemory", foodMemory.metadata.comment);
 
         // const foodMemoryChain = new LLMChain({
         //   llm: model,
@@ -110,12 +110,12 @@ export async function POST(req: Request) {
 
         // TODO - this should probably be deleted later. LLM should decide once in a while
         // Decrease happiness if tamagotchi hates the food.
-        if (rating < 3) {
-          stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
-          animation = vomiting;
-        } else {
-          stats.eat += 1;
-        }
+        // if (rating < 3) {
+        //   stats.happy = stats.happy > 0 ? stats.happy - 1 : 0;
+        //   animation = vomiting;
+        // } else {
+        //   stats.eat += 1;
+        // }
 
         await memoryManager.saveInteraction(
           INTERACTION.FEED,

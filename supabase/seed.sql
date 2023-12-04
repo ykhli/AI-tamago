@@ -1,15 +1,15 @@
 
 
 
-insert into llamagotchi_status
-    (happiness, hunger, health, age, other)
+insert into tamagotchi_status
+    (status, updatedat)
 values
-    (0, 0, 0, 0, 0);
+    ('{"happiness": 0, "hunger": 0, "health": 0, "age": 1}', NOW());
 
 
 
-insert into llamagotchi_interactions
+insert into tamagotchi_interactions
     (interaction, metadata)
 values
-    ('BORN', '{}')
+    ('BORN', '{}',  NOW())
 

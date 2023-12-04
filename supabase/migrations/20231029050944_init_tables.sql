@@ -1,13 +1,11 @@
-create table llamagotchi_status (
-    happiness int,
-    hunger int,
-    health int,
-    age int,
-    other int,
+create table tamagotchi_status (
+    id serial primary key,
+    status jsonb,
     updatedAt timestamp
 );
 
-create table llamagotchi_interactions (
+create table tamagotchi_interactions (
+    id serial primary key,
     interaction varchar(255),
     metadata jsonb,
     ts timestamp
