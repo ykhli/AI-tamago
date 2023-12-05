@@ -1,4 +1,5 @@
 import { inngest } from "./client";
+import StateManager from "@/app/utils/state";
 
 export const helloWorld = inngest.createFunction(
   { id: "hello-world" },
@@ -6,5 +7,16 @@ export const helloWorld = inngest.createFunction(
   async ({ event, step }) => {
     await step.sleep("wait-a-moment", "1s");
     return { event, body: "Hello, World!" };
+  }
+);
+
+export const inngestTick = inngest.createFunction(
+  { id: "tick" },
+  { cron: "*/30 * * * * *" },
+  async ({ step }) => {
+    await step.run("inngest-tick", async () => {
+      const stateManager = await StateManager.getInstance();
+      return stateManager.update();
+    });
   }
 );

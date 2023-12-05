@@ -18,7 +18,6 @@ import {
   vomiting,
 } from "@/components/tamagotchiFrames";
 import { getModel } from "@/app/utils/model";
-import { metadata } from "@/app/layout";
 import StateManager from "@/app/utils/state";
 
 dotenv.config({ path: `.env.local` });

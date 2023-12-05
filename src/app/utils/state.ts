@@ -51,13 +51,14 @@ class StateManager {
       You get unhealthy if you ate too much, ate something you hate, or simply caught cold from visiting friends. 
       You are unhappy when you are disciplined, sick, or are not clean. You are generally in a good mood after bath. 
       You die when all your values are 0. 
+      You poop requently. The more you eat, the more you poop. You will need your owner give you a bath to clean you up.
       
       The time now is ${new Date().toISOString()}.
       Return your current status in JSON based on your interaction data above. Include a comment explaining why you feel this way.
 
      
       Example (for demonstration purpose) - Max value for each field is 10, min value for each field is 0.
-      {{ "hunger": 0, "happiness": 0, "health": 0, "comment": "(add a comment based on context)"}}
+      {{ "hunger": 0, "happiness": 3, "health": 1, "comment": "(add a comment based on context)", "poop": "💩💩💩"}}
 
       `);
     console.log("lastInteractions", lastInteractions);
@@ -83,6 +84,7 @@ class StateManager {
           health: status.health,
           happiness: status.happiness,
           hunger: status.hunger,
+          poop: status.poop,
         }),
       })
       .catch(console.error);
@@ -93,6 +95,7 @@ class StateManager {
 
     await this.updateTamagotchiStatus({
       ...resultJsonMetadata,
+      poop: status.poop + resultJsonMetadata.poop,
       age,
     });
   }
