@@ -12,7 +12,7 @@ export const helloWorld = inngest.createFunction(
 
 export const inngestTick = inngest.createFunction(
   { id: "tick" },
-  { cron: "* * * * *" },
+  { cron: "*/5 * * * *" },
   async ({ step }) => {
     await step.run("inngest-tick", async () => {
       const stateManager = await StateManager.getInstance();
