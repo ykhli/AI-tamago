@@ -14,6 +14,19 @@ export enum INTERACTION {
   // TODO - add other types
 }
 
+export async function handleBath(stateManager: StateManager) {
+  console.debug("Bathing...");
+  const currentStatus = await stateManager.getLatestStatus();
+  const lastInteractions = await stateManager.getLastInteractions();
+
+  await stateManager.saveInteraction(INTERACTION.BATH, {});
+  const newStatus = {
+    ...currentStatus,
+    poop: currentStatus.poop === 0 ? 0 : currentStatus.poop - 1,
+  };
+  await stateManager.updateTamagotchiStatus(newStatus);
+}
+
 export async function handleDiscipline(
   model: any,
   memoryManager: MemoryManager,

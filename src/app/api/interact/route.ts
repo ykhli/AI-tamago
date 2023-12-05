@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
 import {
+  handleBath,
   handleDiscipline,
   handlPlay,
   INTERACTION,
 } from "@/app/utils/interaction";
 import { LLMChain } from "langchain/chains";
 import {
+  bath,
   discipline,
   eating,
   idle,
@@ -117,6 +119,14 @@ export async function POST(req: Request) {
           resultJsonMetadata
         );
       }
+      break;
+
+    case INTERACTION.BATH:
+      status = "Bathing ...  ";
+      await handleBath(stateManager);
+
+      animation = bath;
+
       break;
     case INTERACTION.DISCIPLINE:
       status = "Disciplining ... :( ";
