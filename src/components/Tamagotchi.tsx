@@ -22,7 +22,11 @@ const Tamagotchi: React.FC = () => {
         const response = await fetch("/api/getState", { method: "POST" });
         if (response.ok) {
           const jsonData = await response.json();
+          if (!!!jsonData.comment) {
+            jsonData.comment = "No comments";
+          }
           setTamagotchiState(jsonData);
+          console.log(jsonData);
           handleDeath(jsonData, pollInterval);
         }
       } catch (error) {
@@ -63,6 +67,33 @@ const Tamagotchi: React.FC = () => {
       clearInterval(pollInterval);
     }
   };
+
+  const handleBath = async () => {
+    setIsInteracting(true);
+    setTamaStatus("Bathing...");
+    try {
+      const response = await fetch("/api/interact", {
+        method: "POST",
+        body: JSON.stringify({
+          interactionType: INTERACTION.BATH,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const responseText = await response.text();
+      handleResponse(responseText);
+    } catch (e) {
+      console.log(e);
+    }
+
+    setTimeout(() => {
+      setAnimation(idle);
+      setTamaStatus(DEFAULT_STATUS);
+      setIsInteracting(false);
+    }, 9000);
+  };
+
   const feedTamagotchi = async (e: any) => {
     setIsInteracting(true);
     // Add logic to feed the Tamagotchi here
@@ -178,6 +209,11 @@ const Tamagotchi: React.FC = () => {
     }
   };
 
+  let needForBath = "";
+  for (let i = 0; i < tamagotchiState.poop; i++) {
+    needForBath += "💩";
+  }
+
   return (
     <div className="flex flex-col justify-center items-center h-screen w-screen bg-slate-50 tamago-frame">
       <div className="text-center mb-2">Status: {tamaStatus}</div>
@@ -216,7 +252,10 @@ const Tamagotchi: React.FC = () => {
         <div className="flex justify-center">
           <div className="flex items-center justify-center w-64 h-48 overflow-hidden">
             {!checkingStatus && (
-              <pre className="text-center">{animation[frameIndex]}</pre>
+              <div>
+                <pre className="text-center">{animation[frameIndex]}</pre>
+                <div>{needForBath}</div>
+              </div>
             )}
 
             {checkingStatus && (
@@ -236,7 +275,7 @@ const Tamagotchi: React.FC = () => {
         </div>
         <div className="flex justify-between">
           <button
-            onClick={feedTamagotchi}
+            onClick={handleBath}
             className="px-4 py-2 mr-2 bg-blue-200 rounded-lg"
             style={{ width: "80px" }}
           >
