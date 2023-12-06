@@ -14,17 +14,7 @@ export function getModel() {
     console.debug("Using Replicate Llama");
     return new Replicate({
       apiKey: process.env.REPLICATE_API_TOKEN,
-      model:
-        //newer versions have emojis broken 😔
-        "meta/llama13b-v2-chat:2d19859030ff705a87c746f7e96eea03aefb71f166725aee39692f1476566d48",
-      input: {
-        system_prompt: `You are a helpful assistant, that only communicates using JSON files and no other words.
-                The expected output from you has to be: 
-                    {
-                        "text": {response}
-                    }
-                "`,
-      },
+      model: "meta/codellama-13b-instruct:ca8c51bf3c1aaf181f9df6f10f31768f065c9dddce4407438adc5975a59ce530",
     });
   } else if (model == LlmModel.Ollama) {
     const endpoint = (process.env.OLLAMA_URL || "").toLowerCase();
