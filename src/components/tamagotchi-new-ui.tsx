@@ -28,6 +28,8 @@ import { INTERACTION } from "@/app/utils/interaction";
 const DEFAULT_STATUS = ":)";
 export function TamagotchiNewUI() {
   const [frameIndex, setFrameIndex] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingStatus, setLoadingStatus] = useState<string>("");
   const [tamagotchiState, setTamagotchiState] = useState<any>({});
   const [animation, setAnimation] = useState<string[]>(idle);
   const [tamaStatus, setTamaStatus] = useState(DEFAULT_STATUS);
@@ -37,6 +39,18 @@ export function TamagotchiNewUI() {
   //TODO - call init endpoint to determine if tamagotchi is initialized. if not generate one.
 
   useEffect(() => {
+    let progress = 0;
+    let loadingInterval: NodeJS.Timer;
+    if (isLoading) {
+      loadingInterval = setInterval(() => {
+        const loadingStr = ".".repeat(progress % 5);
+        setLoadingStatus(loadingStr);
+        progress++;
+      }, 200);
+    } else {
+      setLoadingStatus("");
+    }
+
     const fetchData = async () => {
       try {
         const response = await fetch("/api/getState", { method: "POST" });
@@ -57,7 +71,7 @@ export function TamagotchiNewUI() {
     // Cycle through frames every 1 second
     const frameInterval = setInterval(() => {
       setFrameIndex((prevIndex) => (prevIndex + 1) % idle.length);
-    }, 1000);
+    }, 500);
 
     // Fetch data on component mount
     fetchData();
@@ -68,8 +82,9 @@ export function TamagotchiNewUI() {
     return () => {
       clearInterval(pollInterval);
       clearInterval(frameInterval);
+      clearInterval(loadingInterval);
     };
-  }, []);
+  }, [isLoading]);
 
   const handleResponse = (responseText: string) => {
     const responseJSON = JSON.parse(responseText);
@@ -81,6 +96,7 @@ export function TamagotchiNewUI() {
   };
 
   const handleDeath = (jsonData: any, pollInterval: NodeJS.Timer) => {
+    //TODO - not yet implemented
     if (jsonData.death) {
       setAnimation(death);
       setTamaStatus("Dead :(");
@@ -89,8 +105,9 @@ export function TamagotchiNewUI() {
   };
 
   const handleBath = async () => {
+    setIsLoading(true);
     setIsInteracting(true);
-    setTamaStatus("Bathing...");
+    setTamaStatus("Bathing");
     try {
       const response = await fetch("/api/interact", {
         method: "POST",
@@ -111,13 +128,15 @@ export function TamagotchiNewUI() {
       setAnimation(idle);
       setTamaStatus(DEFAULT_STATUS);
       setIsInteracting(false);
+      setIsLoading(false);
     }, 9000);
   };
 
   const feedTamagotchi = async (e: any) => {
     setIsInteracting(true);
+    setIsLoading(true);
     // Add logic to feed the Tamagotchi here
-    setTamaStatus("Feeding...");
+    setTamaStatus("Feeding");
     try {
       const response = await fetch("/api/interact", {
         method: "POST",
@@ -129,6 +148,7 @@ export function TamagotchiNewUI() {
         },
       });
       const responseText = await response.text();
+      setIsLoading(false);
       handleResponse(responseText);
     } catch (e) {
       console.log(e);
@@ -146,7 +166,8 @@ export function TamagotchiNewUI() {
 
   const playWithTamagotchi = async (e: any) => {
     // Add logic to feed the Tamagotchi here
-    setTamaStatus("Playing...");
+    setIsLoading(true);
+    setTamaStatus("Playing");
     setIsInteracting(true);
     try {
       const response = await fetch("/api/interact", {
@@ -159,6 +180,7 @@ export function TamagotchiNewUI() {
         },
       });
       const responseText = await response.text();
+      setIsLoading(false);
       handleResponse(responseText);
     } catch (e) {
       console.log(e);
@@ -171,6 +193,8 @@ export function TamagotchiNewUI() {
   };
 
   const treatSickTamagotchi = async (e: any) => {
+    setIsLoading(true);
+    setTamaStatus("Going to hospital");
     setIsInteracting(true);
     try {
       const response = await fetch("/api/interact", {
@@ -191,11 +215,13 @@ export function TamagotchiNewUI() {
       setAnimation(idle);
       setTamaStatus(DEFAULT_STATUS);
       setIsInteracting(false);
+      setIsLoading(false);
     }, 9000);
   };
 
   const handleDiscipline = async () => {
-    setTamaStatus("Discipling...");
+    setIsLoading(true);
+    setTamaStatus("Discipling");
     setIsInteracting(true);
     try {
       const response = await fetch("/api/interact", {
@@ -208,6 +234,7 @@ export function TamagotchiNewUI() {
         },
       });
       const responseText = await response.text();
+      setIsLoading(false);
       handleResponse(responseText);
     } catch (e) {
       console.log(e);
@@ -220,12 +247,17 @@ export function TamagotchiNewUI() {
   };
 
   const checkStatus = () => {
+    setIsLoading(true);
     if (!isInteracting) {
-      setTamaStatus("Checking Status...");
+      setTamaStatus("Checking Status");
       setCheckingStatus(true);
       setTimeout(() => {
+        setAnimation(idle);
+        setTamaStatus(DEFAULT_STATUS);
+        setIsInteracting(false);
         setCheckingStatus(false);
-      }, 9000);
+        setIsLoading(false);
+      }, 6000);
     }
   };
 
@@ -270,6 +302,7 @@ export function TamagotchiNewUI() {
           onClick={feedTamagotchi}
           className="flex items-center justify-center"
           variant="outline"
+          disabled={isInteracting}
         >
           <FaBowlFood /> &nbsp; Feed
         </Button>
@@ -277,10 +310,12 @@ export function TamagotchiNewUI() {
           onClick={playWithTamagotchi}
           className="flex items-center justify-center"
           variant="outline"
+          disabled={isInteracting}
         >
           <FaBasketball /> &nbsp; Play
         </Button>
         <Button
+          disabled={isInteracting}
           onClick={handleBath}
           className="flex items-center justify-center"
           variant="outline"
@@ -289,6 +324,7 @@ export function TamagotchiNewUI() {
           &nbsp; Clean
         </Button>
         <Button
+          disabled={isInteracting}
           onClick={handleDiscipline}
           className="flex items-center justify-center"
           variant="outline"
@@ -296,6 +332,7 @@ export function TamagotchiNewUI() {
           <FaFaceSadCry /> &nbsp; Discipline
         </Button>
         <Button
+          disabled={isInteracting}
           onClick={checkStatus}
           className="flex items-center justify-center"
           variant="outline"
@@ -303,6 +340,7 @@ export function TamagotchiNewUI() {
           <FaChartArea /> &nbsp; Status
         </Button>
         <Button
+          disabled={isInteracting}
           onClick={treatSickTamagotchi}
           className="flex items-center justify-center"
           variant="outline"
@@ -311,8 +349,9 @@ export function TamagotchiNewUI() {
         </Button>
       </CardContent>
       <CardFooter className="py-4 dark:bg-gray-800 rounded-b-lg border-t-2 border-gray-200 dark:border-gray-700">
-        <div className="text-center text-lg font-semibold text-gray-600 dark:text-gray-400">
+        <div className="h-10 text-center text-lg font-semibold text-gray-600 dark:text-gray-400">
           {tamaStatus}
+          {loadingStatus}
         </div>
       </CardFooter>
     </Card>
