@@ -76,7 +76,7 @@ export async function POST(req: Request) {
           .catch(console.error);
         const { text } = result!;
         const resultJsonMetadata = JSON.parse(text);
-        console.log(result)
+
         const food = resultJsonMetadata.food;
         const refuseToEat = resultJsonMetadata.refuse
           ? resultJsonMetadata.refuse
