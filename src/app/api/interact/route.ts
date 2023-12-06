@@ -23,9 +23,7 @@ import { getModel } from "@/app/utils/model";
 import StateManager from "@/app/utils/state";
 
 dotenv.config({ path: `.env.local` });
-
-let status = "Feeding ...";
-
+let status = "";
 const recentFood: string[] = [];
 
 export async function POST(req: Request) {
@@ -122,14 +120,14 @@ export async function POST(req: Request) {
       break;
 
     case INTERACTION.BATH:
-      status = "Bathing ...  ";
+      status = "Bathing";
       await handleBath(stateManager);
 
       animation = bath;
 
       break;
     case INTERACTION.DISCIPLINE:
-      status = "Disciplining ... :( ";
+      status = "Disciplining";
       let disciplineResult = await handleDiscipline(
         model,
         memoryManager,
@@ -168,9 +166,8 @@ export async function POST(req: Request) {
       break;
     case INTERACTION.GO_TO_HOSPITAL:
       console.debug("Hospital!");
-
+      status = "Going to hospital";
       await stateManager.saveInteraction(INTERACTION.GO_TO_HOSPITAL, {});
-      status = "To the Hospital...";
 
       animation = sick;
       break;
