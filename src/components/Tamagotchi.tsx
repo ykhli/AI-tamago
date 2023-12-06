@@ -268,7 +268,7 @@ export function Tamagotchi() {
   return (
     <Card key="1" className="w-full max-w-xl p-6 space-y-6 bg-white">
       <CardHeader className="items-center space-y-2">
-        <CardTitle className="text-xl">AI Tamagotchi</CardTitle>
+        <CardTitle className="text-xl">AI Tamago</CardTitle>
         <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
           Care for your virtual pet!
         </CardDescription>
