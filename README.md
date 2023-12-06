@@ -3,7 +3,7 @@ An 100% local, LLM-generated and LLM-driven virtual pet with thoughts, feelings 
 
 All ascii animations are generated using chatgpt (included prompts in the repo). 
 
-<img width="833" alt="Screen Shot 2023-12-05 at 9 44 26 PM" src="https://github.com/ykhli/AI-tamago/assets/3489963/8075ddb4-a859-4b1c-af29-8afad866c7da">
+<img width="600" alt="Screen Shot 2023-12-05 at 9 59 05 PM" src="https://github.com/ykhli/AI-tamago/assets/3489963/133695d0-74b3-4197-bc2a-89b5fe4f3034">
 
 ## Stack
 
