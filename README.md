@@ -1,7 +1,20 @@
 # AI Tamago 🥚🐣
-An 100% local, LLM-driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! 
+An 100% local, LLM-generated and LLM-driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! 
+
+All ascii animations are generated using chatgpt (included prompts in the repo). 
 
 <img width="833" alt="Screen Shot 2023-12-05 at 9 44 26 PM" src="https://github.com/ykhli/AI-tamago/assets/3489963/8075ddb4-a859-4b1c-af29-8afad866c7da">
+
+## Stack
+
+- 🦙 Inference: [Ollama](https://github.com/jmorganca/ollama)
+- 🔔 Game state: [Inngest](https://www.inngest.com/)
+- 💻 Transactional & vector database: [Supabase pgvector](https://supabase.com/docs/guides/database/extensions/pgvector)
+- 🧠 LLM Orchestration: [Langchain.js](https://js.langchain.com/docs/)
+- 🖼️ App logic: [Next.js](https://nextjs.org/)
+- 🧮 Embeddings generation: [Transformer.js](https://github.com/xenova/transformers.js) and [
+all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
+- 🖌️ UI: [Vercel v0](https://v0.dev/)
 
 
 ## Quickstart
