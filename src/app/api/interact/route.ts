@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   model.verbose = true;
   const memoryManager = await MemoryManager.getInstance();
   const stateManager = await StateManager.getInstance();
-  const tamagoStatus = await stateManager.getLatestStatus();
+  const tamagoStatus = (await stateManager.getLatestStatus()).status;
   console.log("tamagotchiStatus", tamagoStatus);
 
   switch (interactionType) {

@@ -1,6 +1,7 @@
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { INTERACTION } from "./interaction";
 import { pipeline } from "@xenova/transformers";
+import { inngest } from "@/inngest/client";
 
 class MemoryManager {
   private static instance: MemoryManager;
@@ -51,15 +52,18 @@ class MemoryManager {
 
   public async vectorSearch(contentToSearch: string) {
     const embedding = await this.generateEmbedding(contentToSearch);
+
     const result = await this.dbClient.rpc("match_documents", {
       query_embedding: embedding,
-      match_count: 1,
+      match_count: 3,
     });
 
     if (result.error) {
       console.error("ERROR: ", result.error);
     }
-    return result.data[0] || "";
+    console.log("vector search resulut", result.data || "");
+    inngest.send({ name: "vectorsearch.complete", data: result.data[0] });
+    return result.data || "";
   }
 
   public static async getInstance(): Promise<MemoryManager> {
