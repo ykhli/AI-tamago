@@ -50,7 +50,7 @@ class StateManager {
       You get hungry if you haven't had food you liked. You get unhappy if you haven't been played within the last hour. 
       You get unhealthy if you ate too much, ate something you hate, or simply caught cold from visiting friends. 
       You are unhappy when you are disciplined, sick, or are not clean. You are generally in a good mood after bath. 
-      You die when all your values are 0. 
+      You die when happiness = 0, health = 0 and hunger = 10. 
       You poop frequently. Poop level can ONLY increase and never decrease. The more you eat, the more you poop. You will need your owner give you a bath to clean you up. Poop level is 0-10, 10 being the max (you really, really need a bath)
       
       The time now is ${new Date().toISOString()}.
@@ -58,7 +58,7 @@ class StateManager {
 
      
       Example (for demonstration purpose) - Max value for each field is 10, min value for each field is 0.
-      {{ "hunger": 0, "happiness": 3, "health": 1, "comment": "(add a comment based on context)", "poop": "1"}}
+      {{ "hunger": 0, "happiness": 3, "health": 1, "comment": "(add a comment based on context)", "poop": 1}}
 
       `);
     console.log("lastInteractions", lastInteractions);
