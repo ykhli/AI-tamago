@@ -1,19 +1,68 @@
-# TamagoGPT 🥚
+# AI Tamago 🥚
+An 100% local, LLM-driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! 
 
-<img width="356" alt="Screenshot 2023-09-07 at 4 47 58 AM" src="https://github.com/ykhli/tamagotchiGPT/assets/3489963/7fb5aab2-98b1-4efd-a2a7-7914e06cdaf8">
+<img width="833" alt="Screen Shot 2023-12-05 at 9 44 26 PM" src="https://github.com/ykhli/AI-tamago/assets/3489963/8075ddb4-a859-4b1c-af29-8afad866c7da">
 
-## Getting Started
 
-`npm install`
-`npm run dev`
+## Quickstart
+
+### 1. Fork and Clone repo
+
+Fork the repo to your Github account, then run the following command to clone the repo:
+
+```
+git clone git@github.com:[YOUR_GITHUB_ACCOUNT_NAME]/AI-tamago.git
+```
+
+### 2. Install dependencies
+```
+cd ai-tamago
+npm run dev
+```
 
 All client side tamagotchi code is in Tamagotchi.tsx
 
-## Local Setup
+### 3. Install Ollama
+Instructions are [here](https://github.com/jmorganca/ollama#macos).
 
-`brew install supabase/tap/supabase`
+### 4. Run Supabase locally
+1. Install Supabase CLI
 
-`supabase start`
+```
+brew install supabase/tap/supabase
+```
 
-To run migrations or reset database -- seed.sql and migrations will run
+2. Start Supabase
+
+Make sure you are under `/ai-tamago` directory and run:
+
+```
+supabase start
+```
+
+Tips: To run migrations or reset database -- seed.sql and migrations will run
 `supabase db reset`
+
+### 5. Fill in secrets
+
+```
+cp .env.local.example .env.local
+```
+
+Then get `SUPABASE_PRIVATE_KEY` by running
+
+```
+supabase status
+```
+
+Copy `service_role key` and save it as `SUPABASE_PRIVATE_KEY` in `.env.local`
+
+### 6. Set up Inngest
+`npx inngest-cli@latest dev`
+
+Make sure your app is up and running -- Inngest functions (which are used to drive game state) should register automatically. 
+
+### 7. Run app locally
+
+Now you are ready to test out the app locally! To do this, simply run `npm run dev` under the project root and visit `http://localhost:3000`.
+
