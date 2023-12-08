@@ -1,10 +1,8 @@
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { INTERACTION } from "./interaction";
-import { pipeline } from "@xenova/transformers";
 import { PromptTemplate } from "langchain/prompts";
 import { getModel } from "./model";
 import { LLMChain } from "langchain/chains";
-import { stat } from "fs";
 
 const embedding_endpoint = process.env.SUPABASE_EMBEDDING_ENDPOINT!;
 
@@ -29,19 +27,26 @@ class StateManager {
 
   public async init() {}
 
-  public async update() {
+  public async update(vectorSearchResult?: any[]) {
     const statusData = await this.getLatestStatus();
     const status = statusData.status;
+    const preferences = vectorSearchResult
+      ? vectorSearchResult
+          .map((item) => (item.content ? item.content : ""))
+          .join("\n")
+      : "No preferences";
     const lastStatusTs = statusData!.updatedat;
     const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
     const lastInteractions =
       (await this.getInteractionsSince(lastStatusTs)) || [];
-    const timeNow = new Date().getTime();
 
     const prompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. 
       
-      You are a virtual pet, and here's the most recent interactions you had and their timestamps:
+      You are a virtual pet, about your preferences: 
+      ${preferences}
+      
+      Here's the most recent interactions you had and their timestamps:
       {lastInteractions}
 
       If there is no interaction above, it means you haven't had interactions with your owner for a while. Your happiness, health and hunger level should decrease accordingly. 

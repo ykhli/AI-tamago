@@ -2,15 +2,6 @@ import { inngest } from "./client";
 import StateManager from "@/app/utils/state";
 import MemoryManager from "@/app/utils/memory";
 
-export const helloWorld = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
-  async ({ event, step }) => {
-    await step.sleep("wait-a-moment", "1s");
-    return { event, body: "Hello, World!" };
-  }
-);
-
 export const inngestTick = inngest.createFunction(
   { id: "tick" },
   { cron: "*/5 * * * *" },
@@ -33,7 +24,7 @@ export const inngestTick = inngest.createFunction(
     if (vectorSearchResult) {
       await step.run("inngest-tick", async () => {
         const stateManager = await StateManager.getInstance();
-        return stateManager.update();
+        return stateManager.update(vectorSearchResult.data.result);
       });
     }
   }

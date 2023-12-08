@@ -61,8 +61,10 @@ class MemoryManager {
     if (result.error) {
       console.error("ERROR: ", result.error);
     }
-    console.log("vector search resulut", result.data || "");
-    inngest.send({ name: "vectorsearch.complete", data: result.data[0] });
+    inngest.send({
+      name: "vectorsearch.complete",
+      data: { result: result.data },
+    });
     return result.data || "";
   }
 
