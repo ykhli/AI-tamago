@@ -1,6 +1,5 @@
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { INTERACTION } from "./interaction";
-import { pipeline } from "@xenova/transformers";
 import { PromptTemplate } from "langchain/prompts";
 import { getModel } from "./model";
 import { LLMChain } from "langchain/chains";
@@ -28,21 +27,29 @@ class StateManager {
 
   public async init() {}
 
-  public async update() {
-    console.log("supabase url", process.env.SUPABASE_URL);
-    const status = await this.getLatestStatus();
-    console.log("tamagotchiStatus", status);
+  public async update(vectorSearchResult?: any[]) {
+    const statusData = await this.getLatestStatus();
+    const status = statusData.status;
+    const preferences = vectorSearchResult
+      ? vectorSearchResult
+          .map((item) => (item.content ? item.content : ""))
+          .join("\n")
+      : "No preferences";
+    const lastStatusTs = statusData!.updatedat;
     const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
-    const lastInteractions = (await this.getLastInteractions()) || [];
-    const timeNow = new Date().getTime();
+    const lastInteractions =
+      (await this.getInteractionsSince(lastStatusTs)) || [];
 
     const prompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. 
       
-      You are a virtual pet, and here's the last 10 interactions you had and their timestamps:
+      You are a virtual pet, about your preferences: 
+      ${preferences}
+      
+      Here's the most recent interactions you had and their timestamps:
       {lastInteractions}
 
-      If there is no interaction above, it means you haven't had interactions with your owner for a while. Your happiness, health and hunger level will be affected accordingly. 
+      If there is no interaction above, it means you haven't had interactions with your owner for a while. Your happiness, health and hunger level should decrease accordingly. 
 
       Your previous status: 
       {status}
@@ -58,7 +65,7 @@ class StateManager {
 
      
       Example (for demonstration purpose) - Max value for each field is 10, min value for each field is 0.
-      {{ "hunger": 0, "happiness": 3, "health": 1, "comment": "(add a comment based on context)", "poop": 1}}
+      {{ "hunger": 0, "happiness": 3, "health": 1, "comment": "I'm sad that I haven't had much interaction with my owner", "poop": 1}}
 
       `);
     console.log("lastInteractions", lastInteractions);
@@ -106,6 +113,17 @@ class StateManager {
     });
   }
 
+  public async getInteractionsSince(timestamp: string) {
+    const { data, error } = await this.dbClient
+      .from("tamagotchi_interactions")
+      .select()
+      .gt("updatedat", timestamp);
+    if (error) {
+      console.error(error);
+    }
+    return data;
+  }
+
   public async getLastInteractions() {
     const { data, error } = await this.dbClient
       .from("tamagotchi_interactions")
@@ -126,7 +144,8 @@ class StateManager {
     if (error) {
       console.error("error: ", error);
     }
-    return data![0].status;
+
+    return data![0];
   }
 
   public async saveInteraction(interaction: INTERACTION, metadata: any) {

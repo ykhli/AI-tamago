@@ -27,7 +27,7 @@ create table documents (
 
 -- Create a function to search for documents
 create function match_documents (
-  query_embedding vector(1536),
+  query_embedding vector(384),
   match_count int DEFAULT null,
   filter jsonb DEFAULT '{}'
 ) returns table (

@@ -16,7 +16,7 @@ export enum INTERACTION {
 
 export async function handleBath(stateManager: StateManager) {
   console.debug("Bathing...");
-  const currentStatus = await stateManager.getLatestStatus();
+  const currentStatus = (await stateManager.getLatestStatus()).status;
   const lastInteractions = await stateManager.getLastInteractions();
 
   await stateManager.saveInteraction(INTERACTION.BATH, {});
@@ -33,7 +33,7 @@ export async function handleDiscipline(
   stateManager: StateManager
 ) {
   console.debug("Discipline :(");
-  const currentStatus = await stateManager.getLatestStatus();
+  const currentStatus = (await stateManager.getLatestStatus()).status;
   const lastInteractions = await stateManager.getLastInteractions();
   const disciplinePrompt = PromptTemplate.fromTemplate(`
 ONLY return JSON as output. no prose. ONLY JSON!!!
@@ -84,7 +84,9 @@ export async function handlPlay(
   stateManager: StateManager
 ) {
   console.debug("Playing!");
-  const currentStatus = JSON.stringify(await stateManager.getLatestStatus());
+  const currentStatus = JSON.stringify(
+    (await stateManager.getLatestStatus()).status
+  );
   const playPrompt = PromptTemplate.fromTemplate(`
 ONLY return JSON as output. no prose. ONLY JSON!!!
 
