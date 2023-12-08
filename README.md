@@ -5,7 +5,11 @@ All ascii animations are generated using chatgpt (included prompts in the repo).
 
 Have questions? Join [AI Stack devs](https://discord.gg/TsWCNVvRP5) and find me in #ai-tamago channel.
 
-<img width="600" alt="Screen Shot 2023-12-05 at 9 59 05 PM" src="https://github.com/ykhli/AI-tamago/assets/3489963/133695d0-74b3-4197-bc2a-89b5fe4f3034">
+**Demo** 🪄
+
+https://github.com/ykhli/AI-tamago/assets/3489963/8d7cb2ac-537a-45d4-98a5-1802b773e364
+
+
 
 ## Stack
 
