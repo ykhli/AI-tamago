@@ -95,5 +95,5 @@ While I'm still writing up a detailed deployment guide, here are the resources y
 - [Adding auth with Clerk](https://clerk.com/docs/quickstarts/nextjs) - takes < 5mins
 - [Inngest deployment guide](https://www.inngest.com/docs/deploy)https://www.inngest.com/docs/deploy
 - [Running Ollama on Fly.io](https://fly.io/blog/scaling-llm-ollama/)https://fly.io/blog/scaling-llm-ollama/
-- [Run a next.js app on Fly.io](https://fly.io/docs/js/frameworks/nextjs/#:~:text=Deploy%20an%20existing%20NextJS%20app&text=First%2C%20install%20flyctl%2C%20your%20Fly,the%20root%20of%20your%20application.&text=Creating%20app%20in%20%2FUsers%2Fme,source%20code%20Detected%20a%20Next.)https://fly.io/docs/js/frameworks/nextjs/#:~:text=Deploy%20an%20existing%20NextJS%20app&text=First%2C%20install%20flyctl%2C%20your%20Fly,the%20root%20of%20your%20application.&text=Creating%20app%20in%20%2FUsers%2Fme,source%20code%20Detected%20a%20Next.
+- [Run a next.js app on Fly.io](https://fly.io/docs/js/frameworks/nextjs/#:~:text=Deploy%20an%20existing%20NextJS%20app&text=First%2C%20install%20flyctl%2C%20your%20Fly,the%20root%20of%20your%20application.&text=Creating%20app%20in%20%2FUsers%2Fme,source%20code%20Detected%20a%20Next.)
 
