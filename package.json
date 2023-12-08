@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@arcjet/next": "^1.0.0-alpha.2",
     "@clerk/nextjs": "^4.21.9",
     "@headlessui/react": "^1.7.15",
     "@radix-ui/react-avatar": "^1.0.4",
