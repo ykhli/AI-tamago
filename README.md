@@ -13,7 +13,7 @@ https://github.com/ykhli/AI-tamago/assets/3489963/8d7cb2ac-537a-45d4-98a5-1802b7
 
 ## Stack
 
-- 🦙 Inference: [Ollama](https://github.com/jmorganca/ollama), with options to use OpenAI or Replicate
+- 🦙 Inference: [Ollama](https://github.com/jmorganca/ollama), with options to use OpenAI or [Replicate](https://replicate.com/)
 - 🔔 Game state: [Inngest](https://www.inngest.com/)
 - 💻 Transactional & vector database: [Supabase pgvector](https://supabase.com/docs/guides/database/extensions/pgvector)
 - 🧠 LLM Orchestration: [Langchain.js](https://js.langchain.com/docs/)
