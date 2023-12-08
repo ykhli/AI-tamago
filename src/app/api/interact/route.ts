@@ -108,8 +108,8 @@ export async function POST(req: Request) {
         const eatingAnimation: string[] = refuseToEat
           ? vomiting
           : eating.map((frame) => {
-              return frame.replace("{{FOOD_EMOJI}}", emoji);
-            });
+            return frame.replace("{{FOOD_EMOJI}}", emoji);
+          });
 
         animation = eatingAnimation;
         await stateManager.saveInteraction(

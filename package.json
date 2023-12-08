@@ -37,6 +37,7 @@
     "react-github-btn": "^1.4.0",
     "react-icons": "^4.12.0",
     "react-tooltip": "^5.16.1",
+    "replicate": "^0.18.1",
     "tailwind-merge": "^2.1.0",
     "tailwindcss": "3.3.2",
     "tailwindcss-animate": "^1.0.7",
