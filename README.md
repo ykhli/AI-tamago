@@ -63,6 +63,7 @@ Tips: To run migrations or reset database -- seed.sql and migrations will run
 `supabase db reset`
 
 ### 5. Fill in secrets
+Note: The secrets here are for your **local** supabase instance
 
 ```
 cp .env.local.example .env.local
