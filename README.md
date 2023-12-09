@@ -24,7 +24,7 @@ all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
 
 ## Prerequisites
 
-- [Download Docker](https://www.docker.com/get-started).
+- [Install Docker](https://www.docker.com/get-started)
 
 ## Quickstart
 
