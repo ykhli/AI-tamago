@@ -22,6 +22,9 @@ https://github.com/ykhli/AI-tamago/assets/3489963/8d7cb2ac-537a-45d4-98a5-1802b7
 all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
 - 🖌️ UI: [Vercel v0](https://v0.dev/)
 
+## Prerequisites
+
+- Docker: The AI Tamago application runs inside a Docker container to ensure a consistent and isolated environment. Please make sure you have Docker installed on your system. [Download Docker](https://www.docker.com/get-started).
 
 ## Quickstart
 
