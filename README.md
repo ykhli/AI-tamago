@@ -24,7 +24,7 @@ all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
 
 ## Prerequisites
 
-- Docker: The AI Tamago application runs inside a Docker container to ensure a consistent and isolated environment. Please make sure you have Docker installed on your system. [Download Docker](https://www.docker.com/get-started).
+- [Download Docker](https://www.docker.com/get-started).
 
 ## Quickstart
 
