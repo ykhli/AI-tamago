@@ -22,6 +22,7 @@ import {
 import { getModel } from "@/app/utils/model";
 import StateManager from "@/app/utils/state";
 import { getAuth } from "@clerk/nextjs/server";
+import { rateLimit } from "@/app/utils/rateLimit";
 
 dotenv.config({ path: `.env.local` });
 let status = "";
@@ -33,6 +34,23 @@ export async function POST(req: NextRequest) {
 
   if (!userId) {
     return NextResponse.error();
+  }
+
+  const { success } = await rateLimit(userId);
+
+  if (!success) {
+    console.log("INFO: rate limit exceeded");
+    return new NextResponse(
+      JSON.stringify({
+        Message: "Hello! Time to deploy your own AI Tamago <3",
+      }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 
   let animation = idle;

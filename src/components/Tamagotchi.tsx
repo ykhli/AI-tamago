@@ -24,10 +24,12 @@ import { useEffect, useState } from "react";
 import { death, idle } from "./tamagotchiFrames";
 import { MdLocalHospital } from "react-icons/md";
 import { INTERACTION } from "@/app/utils/interaction";
+import { NextResponse } from "next/server";
 
 const DEFAULT_STATUS = ":)";
 export function Tamagotchi() {
   const [frameIndex, setFrameIndex] = useState<number>(0);
+  const [trialEnded, setTrialEnded] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingStatus, setLoadingStatus] = useState<string>("");
   const [tamagotchiState, setTamagotchiState] = useState<any>({});
@@ -106,7 +108,12 @@ export function Tamagotchi() {
     };
   }, [isLoading]);
 
-  const handleResponse = (responseText: string) => {
+  const handleResponse = async (response: Response) => {
+    if (response.status === 429) {
+      setTrialEnded(true);
+    }
+
+    const responseText = await response.text();
     const responseJSON = JSON.parse(responseText);
     const animation = JSON.parse(responseJSON.animation);
     const status = responseJSON.status;
@@ -138,8 +145,8 @@ export function Tamagotchi() {
           "Content-Type": "application/json",
         },
       });
-      const responseText = await response.text();
-      handleResponse(responseText);
+
+      await handleResponse(response);
     } catch (e) {
       console.log(e);
     }
@@ -167,9 +174,9 @@ export function Tamagotchi() {
           "Content-Type": "application/json",
         },
       });
-      const responseText = await response.text();
+
       setIsLoading(false);
-      handleResponse(responseText);
+      await handleResponse(response);
     } catch (e) {
       console.log(e);
     }
@@ -199,9 +206,9 @@ export function Tamagotchi() {
           "Content-Type": "application/json",
         },
       });
-      const responseText = await response.text();
+
       setIsLoading(false);
-      handleResponse(responseText);
+      await handleResponse(response);
     } catch (e) {
       console.log(e);
     }
@@ -226,8 +233,8 @@ export function Tamagotchi() {
           "Content-Type": "application/json",
         },
       });
-      const responseText = await response.text();
-      handleResponse(responseText);
+
+      await handleResponse(response);
     } catch (e) {
       console.log(e);
     }
@@ -253,9 +260,9 @@ export function Tamagotchi() {
           "Content-Type": "application/json",
         },
       });
-      const responseText = await response.text();
+
       setIsLoading(false);
-      handleResponse(responseText);
+      await handleResponse(response);
     } catch (e) {
       console.log(e);
     }
@@ -287,6 +294,16 @@ export function Tamagotchi() {
   }
   return (
     <Card key="1" className="w-full max-w-xl p-6 space-y-6 bg-white">
+      {trialEnded && (
+        <div
+          className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4"
+          role="alert"
+        >
+          <p className="font-bold">Sorry!</p>
+          <p>Your AI Tamago trial has ended. Time to deploy your own! </p>
+        </div>
+      )}
+
       <CardHeader className="items-center space-y-2">
         <CardTitle className="text-xl">AI Tamago</CardTitle>
         <CardDescription className="text-sm text-gray-500 dark:text-gray-400">

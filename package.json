@@ -19,6 +19,7 @@
     "@types/node": "20.2.5",
     "@types/react": "18.2.8",
     "@types/react-dom": "18.2.4",
+    "@upstash/ratelimit": "^1.0.0",
     "@xenova/transformers": "^2.8.0",
     "autoprefixer": "10.4.14",
     "class-variance-authority": "^0.7.0",

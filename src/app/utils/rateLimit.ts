@@ -1,13 +1,13 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-export async function rateLimit(identifier: string) {
+export async function rateLimit(userId: string) {
   // Rate limit through Upstash
   const ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(10, "10 s"),
+    limiter: Ratelimit.tokenBucket(1, "60 d", 100),
     analytics: true,
     prefix: "@upstash/ratelimit",
   });
-  return await ratelimit.limit(identifier);
+  return await ratelimit.limit(userId);
 }

@@ -3,14 +3,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import StateManager from "@/app/utils/state";
 import { getAuth } from "@clerk/nextjs/server";
-import { NextApiRequest } from "next";
 import MemoryManager from "@/app/utils/memory";
+import { rateLimit } from "@/app/utils/rateLimit";
 
 dotenv.config({ path: `.env.local` });
 
 export async function POST(req: NextRequest) {
   const { userId } = getAuth(req);
+
   if (userId) {
+    const { success } = await rateLimit(userId);
+
+    if (!success) {
+      console.log("INFO: rate limit exceeded");
+      return new NextResponse(
+        JSON.stringify({
+          Message: "Hello! Time to deploy your own AI Tamago <3",
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
     // Only send tick this way in prod
     const url = process.env.SUPABASE_URL!;
     const privateKey = process.env.SUPABASE_PRIVATE_KEY!;
