@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import MemoryManager from "@/app/utils/memory";
 import { PromptTemplate } from "langchain/prompts";
 import {
@@ -21,21 +21,27 @@ import {
 } from "@/components/tamagotchiFrames";
 import { getModel } from "@/app/utils/model";
 import StateManager from "@/app/utils/state";
+import { getAuth } from "@clerk/nextjs/server";
 
 dotenv.config({ path: `.env.local` });
 let status = "";
 const recentFood: string[] = [];
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const { interactionType } = await req.json();
-  console.debug("interactionType", interactionType);
+  const { userId } = getAuth(req);
+
+  if (!userId) {
+    return NextResponse.error();
+  }
+
   let animation = idle;
 
   const model = getModel();
   model.verbose = true;
   const memoryManager = await MemoryManager.getInstance();
   const stateManager = await StateManager.getInstance();
-  const tamagoStatus = (await stateManager.getLatestStatus()).status;
+  const tamagoStatus = (await stateManager.getLatestStatus(userId!)).status;
   console.log("tamagotchiStatus", tamagoStatus);
 
   switch (interactionType) {
@@ -101,27 +107,32 @@ export async function POST(req: Request) {
         //   foodMemory.metadata.comment,
         // });
 
-        await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+        await memoryManager.saveToMemory(
+          potential_comment,
+          resultJsonMetadata,
+          userId
+        );
 
         status = emoji + " " + potential_comment;
 
         const eatingAnimation: string[] = refuseToEat
           ? vomiting
           : eating.map((frame) => {
-            return frame.replace("{{FOOD_EMOJI}}", emoji);
-          });
+              return frame.replace("{{FOOD_EMOJI}}", emoji);
+            });
 
         animation = eatingAnimation;
         await stateManager.saveInteraction(
           INTERACTION.FEED,
-          resultJsonMetadata
+          resultJsonMetadata,
+          userId
         );
       }
       break;
 
     case INTERACTION.BATH:
       status = "Bathing";
-      await handleBath(stateManager);
+      await handleBath(stateManager, userId);
 
       animation = bath;
 
@@ -131,7 +142,8 @@ export async function POST(req: Request) {
       let disciplineResult = await handleDiscipline(
         model,
         memoryManager,
-        stateManager
+        stateManager,
+        userId
       );
 
       console.log("disciplineResult emoji", disciplineResult.emoji);
@@ -151,7 +163,8 @@ export async function POST(req: Request) {
       let resultJsonMetadata = await handlPlay(
         model,
         memoryManager,
-        stateManager
+        stateManager,
+        userId
       );
 
       const emoji = resultJsonMetadata.emoji ? resultJsonMetadata.emoji : "🛝";
@@ -167,7 +180,11 @@ export async function POST(req: Request) {
     case INTERACTION.GO_TO_HOSPITAL:
       console.debug("Hospital!");
       status = "Going to hospital";
-      await stateManager.saveInteraction(INTERACTION.GO_TO_HOSPITAL, {});
+      await stateManager.saveInteraction(
+        INTERACTION.GO_TO_HOSPITAL,
+        {},
+        userId
+      );
 
       animation = sick;
       break;

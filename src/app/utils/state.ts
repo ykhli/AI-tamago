@@ -27,8 +27,8 @@ class StateManager {
 
   public async init() {}
 
-  public async update(vectorSearchResult?: any[]) {
-    const statusData = await this.getLatestStatus();
+  public async update(vectorSearchResult?: any[], userid: string = "") {
+    const statusData = await this.getLatestStatus(userid);
     const status = statusData.status;
     const preferences = vectorSearchResult
       ? vectorSearchResult
@@ -38,7 +38,7 @@ class StateManager {
     const lastStatusTs = statusData!.updatedat;
     const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
     const lastInteractions =
-      (await this.getInteractionsSince(lastStatusTs)) || [];
+      (await this.getInteractionsSince(lastStatusTs, userid)) || [];
 
     const prompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. 
@@ -103,20 +103,24 @@ class StateManager {
       ? resultJsonMetadata.poop
       : 0;
 
-    await this.updateTamagotchiStatus({
-      ...resultJsonMetadata,
-      poop:
-        parseInt(status.poop) > parseInt(resultJsonMetadata.poop)
-          ? parseInt(status.poop)
-          : parseInt(resultJsonMetadata.poop),
-      age,
-    });
+    await this.updateTamagotchiStatus(
+      {
+        ...resultJsonMetadata,
+        poop:
+          parseInt(status.poop) > parseInt(resultJsonMetadata.poop)
+            ? parseInt(status.poop)
+            : parseInt(resultJsonMetadata.poop),
+        age,
+      },
+      userid
+    );
   }
 
-  public async getInteractionsSince(timestamp: string) {
+  public async getInteractionsSince(timestamp: string, userid: string) {
     const { data, error } = await this.dbClient
       .from("tamagotchi_interactions")
       .select()
+      .eq("userid", userid)
       .gt("updatedat", timestamp);
     if (error) {
       console.error(error);
@@ -124,10 +128,11 @@ class StateManager {
     return data;
   }
 
-  public async getLastInteractions() {
+  public async getLastInteractions(userid: string) {
     const { data, error } = await this.dbClient
       .from("tamagotchi_interactions")
       .select()
+      .eq("userid", userid)
       .order("updatedat", { ascending: false })
       .limit(10);
     if (error) {
@@ -135,23 +140,30 @@ class StateManager {
     }
     return data;
   }
-  public async getLatestStatus() {
+  public async getLatestStatus(userid: string) {
     const { data, error } = await this.dbClient
       .from("tamagotchi_status")
       .select()
+      .eq("userid", userid)
       .order("updatedat", { ascending: false })
       .limit(1);
+
     if (error) {
       console.error("error: ", error);
     }
     return data![0];
   }
 
-  public async saveInteraction(interaction: INTERACTION, metadata: any) {
+  public async saveInteraction(
+    interaction: INTERACTION,
+    metadata: any,
+    userid: string
+  ) {
     const { error } = await this.dbClient
       .from("tamagotchi_interactions")
       .insert({
         interaction,
+        userid,
         metadata,
         updatedat: new Date().toISOString(),
       });
@@ -160,9 +172,10 @@ class StateManager {
     }
   }
 
-  public async updateTamagotchiStatus(newStatus: any) {
+  public async updateTamagotchiStatus(newStatus: any, userid: string) {
     const { error } = await this.dbClient.from("tamagotchi_status").insert({
       status: newStatus,
+      userid: userid,
       updatedat: new Date().toISOString(),
     });
     console.log(error);

@@ -21,12 +21,12 @@ class MemoryManager {
 
   public async init() {}
 
-  public async saveToMemory(content: string, metadata: any) {
+  public async saveToMemory(content: string, metadata: any, userid: string) {
     const embedding = await this.generateEmbedding(content);
     const supabaseClient = <SupabaseClient>this.dbClient;
     const error = await supabaseClient
       .from("documents")
-      .insert({ embedding, metadata, content });
+      .insert({ embedding, metadata: { ...metadata, userid }, content });
 
     console.debug("INFO: saved to Supabase.");
     console.debug("INFO: error", error);
@@ -50,17 +50,19 @@ class MemoryManager {
     return embedding;
   }
 
-  public async vectorSearch(contentToSearch: string) {
+  public async vectorSearch(contentToSearch: string, filter?: any) {
     const embedding = await this.generateEmbedding(contentToSearch);
 
     const result = await this.dbClient.rpc("match_documents", {
       query_embedding: embedding,
       match_count: 3,
+      filter,
     });
 
     if (result.error) {
       console.error("ERROR: ", result.error);
     }
+
     inngest.send({
       name: "vectorsearch.complete",
       data: { result: result.data },

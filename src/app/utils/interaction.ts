@@ -5,6 +5,7 @@ import MemoryManager from "./memory";
 import StateManager from "./state";
 
 export enum INTERACTION {
+  BORN,
   FEED,
   PLAY,
   LIGHTS_OUT,
@@ -14,27 +15,28 @@ export enum INTERACTION {
   // TODO - add other types
 }
 
-export async function handleBath(stateManager: StateManager) {
+export async function handleBath(stateManager: StateManager, userid: string) {
   console.debug("Bathing...");
-  const currentStatus = (await stateManager.getLatestStatus()).status;
-  const lastInteractions = await stateManager.getLastInteractions();
+  const currentStatus = (await stateManager.getLatestStatus(userid)).status;
+  const lastInteractions = await stateManager.getLastInteractions(userid);
 
-  await stateManager.saveInteraction(INTERACTION.BATH, {});
+  await stateManager.saveInteraction(INTERACTION.BATH, {}, userid);
   const newStatus = {
     ...currentStatus,
     poop: currentStatus.poop === 0 ? 0 : currentStatus.poop - 1,
   };
-  await stateManager.updateTamagotchiStatus(newStatus);
+  await stateManager.updateTamagotchiStatus(newStatus, userid);
 }
 
 export async function handleDiscipline(
   model: any,
   memoryManager: MemoryManager,
-  stateManager: StateManager
+  stateManager: StateManager,
+  userid: string
 ) {
   console.debug("Discipline :(");
-  const currentStatus = (await stateManager.getLatestStatus()).status;
-  const lastInteractions = await stateManager.getLastInteractions();
+  const currentStatus = (await stateManager.getLatestStatus(userid)).status;
+  const lastInteractions = await stateManager.getLastInteractions(userid);
   const disciplinePrompt = PromptTemplate.fromTemplate(`
 ONLY return JSON as output. no prose. ONLY JSON!!!
 
@@ -69,11 +71,16 @@ Example (for demonstration purpose):
 
   const potential_comment = resultJsonMetadata.comment;
 
-  await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+  await memoryManager.saveToMemory(
+    potential_comment,
+    resultJsonMetadata,
+    userid
+  );
 
   await stateManager.saveInteraction(
     INTERACTION.DISCIPLINE,
-    resultJsonMetadata
+    resultJsonMetadata,
+    userid
   );
   return resultJsonMetadata;
 }
@@ -81,11 +88,12 @@ Example (for demonstration purpose):
 export async function handlPlay(
   model: any,
   memoryManager: MemoryManager,
-  stateManager: StateManager
+  stateManager: StateManager,
+  userid: string
 ) {
   console.debug("Playing!");
   const currentStatus = JSON.stringify(
-    (await stateManager.getLatestStatus()).status
+    (await stateManager.getLatestStatus(userid)).status
   );
   const playPrompt = PromptTemplate.fromTemplate(`
 ONLY return JSON as output. no prose. ONLY JSON!!!
@@ -115,9 +123,17 @@ Example (for demonstration purpose):
 
   const potential_comment = resultJsonMetadata.comment;
 
-  await memoryManager.saveToMemory(potential_comment, resultJsonMetadata);
+  await memoryManager.saveToMemory(
+    potential_comment,
+    resultJsonMetadata,
+    userid
+  );
 
-  await stateManager.saveInteraction(INTERACTION.PLAY, resultJsonMetadata);
+  await stateManager.saveInteraction(
+    INTERACTION.PLAY,
+    resultJsonMetadata,
+    userid
+  );
   return resultJsonMetadata;
 }
 
