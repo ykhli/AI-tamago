@@ -24,8 +24,8 @@ all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
 ### Prod Mode
 All of above, plus: 
 - 🔐 Auth & User Management: [Clerk](https://clerk.com/)
-- ☁️ Hosting: [Fly](https://fly.io/)
-- 🥇Rate Limiting: [Upstash](https://upstash.com/)
+- ☁️  Hosting: [Fly](https://fly.io/)
+- 🥇 Rate Limiting: [Upstash](https://upstash.com/)
 
 ## Overview
 - 🚀 [Quickstart](#quickstart)
@@ -103,13 +103,13 @@ Now you are ready to test out the app locally! To do this, simply run `npm run d
 
 Now you have played with the AI tamago locally -- it's time to deploy it somewhere more permanent so you can access it anytime! 
 
-0. Choose which model you want to use in production
+**0. Choose which model you want to use in production**
 - If you want to test out using Chatgpt in prod, simply remove `LLM_MODEL=ollama` from `.env.local` and fill in `OPENAI_API_KEY`
 - If you want to try [Replicate](https://replicate.com/), set `LLM_MODEL=replicate_llama` and fill in `REPLICATE_API_TOKEN`
 - If you want to deploy Ollama yourself, you can follow this awesome guide -- [Scaling Large Language Models to zero with Ollama](https://fly.io/blog/scaling-llm-ollama/). It is possible to run Ollama on a `performance-4x` Fly VM (CPU) with `100gb` volume, but if you can get access to GPUs they are much faster. Join Fly's GPU waitlist [here](https://fly.io/gpu) if you don't yet have access!
 
 
-1. Switch to `deploy` branch -- this branch includes everything you need to deploy an app like [this](https://ai-tamago.fly.dev/).
+**1. Switch to `deploy` branch -- this branch includes everything you need to deploy an app like [this](https://ai-tamago.fly.dev/).**
 
    
 ```git co deploy```
@@ -117,7 +117,7 @@ Now you have played with the AI tamago locally -- it's time to deploy it somewhe
 
 This branch contains a multi-tenancy-ready (thanks to Clerk) app, which means every user can get their own AI-tamago, and has token limit built in -- you can set how many times a user can send requests in the app (see `ratelimit.ts`)
 
-2. Move to Supabase Cloud:
+**2. Move to Supabase Cloud:**
 
 - Create a Supabase project [here](https://supabase.com/), then go to Project Settings -> API. Fill out secrets in `.env.local`
 - `SUPABASE_URL` is the URL value under "Project URL"
@@ -132,7 +132,7 @@ supabase migration up
 supabase db reset --linked
 ```
 
-3. Create Upstash Redis instance for rate limiting
+**3. Create Upstash Redis instance for rate limiting**
 
 This will make sure no one user calls any API too many times and taking up all the inference workloads. We are using Upstash's [awesome rate limiting SDK](https://upstash.com/blog/upstash-ratelimit) here.
 
@@ -141,7 +141,7 @@ This will make sure no one user calls any API too many times and taking up all t
 - Give it a name, and then select regions and other options based on your preference. Click on "Create"
 - Scroll down to "REST API" section and click on ".env". Now you can copy paste both environment variables (`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`) to your .env.local
 
-4. Now you are ready to deploy everything on Fly.io!
+**4. Now you are ready to deploy everything on Fly.io!**
 - Register an account on fly.io and then [install flyctl](https://fly.io/docs/hands-on/install-flyctl/)
 - Run `fly launch` under project root. This will generate a `fly.toml` that includes all the configurations you will need
 - Run `fly scale memory 512` to scale up the fly vm memory for this app.
