@@ -1,5 +1,5 @@
 # AI Tamago 🥚🐣
-An 100% local, LLM-generated and LLM-driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! 
+An 100% local, LLM-generated and driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! https://ai-tamago.fly.dev/
 
 All ascii animations are generated using chatgpt (included prompts in the repo). 
 
