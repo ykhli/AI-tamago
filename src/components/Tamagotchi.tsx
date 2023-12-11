@@ -78,21 +78,8 @@ export function Tamagotchi() {
       setFrameIndex((prevIndex) => (prevIndex + 1) % idle.length);
     }, 500);
 
-    const tick = async () => {
-      try {
-        const response = await fetch("/api/tick", {
-          method: "POST",
-        });
-        if (response.ok) {
-          console.log("tick: success");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    // Tick once every 5mins
-    const tickInterval = setInterval(tick, 5 * 60 * 1000);
+    // Tick once every 5s
+    const tickInterval = setInterval(tick, 5000);
 
     // Fetch data on component mount
     fetchData();
@@ -107,6 +94,19 @@ export function Tamagotchi() {
       clearInterval(loadingInterval);
     };
   }, [isLoading]);
+
+  const tick = async () => {
+    try {
+      const response = await fetch("/api/tick", {
+        method: "POST",
+      });
+      if (response.ok) {
+        console.log("tick: success");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const handleResponse = async (response: Response) => {
     if (response.status === 429) {

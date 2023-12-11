@@ -27,8 +27,17 @@ class StateManager {
 
   public async init() {}
 
+  public async checkIfShouldTick(userid: string) {
+    const statusData = await this.getLatestStatus(userid);
+    const lastStatusTs = statusData!.updatedat;
+    const lastInteractions =
+      (await this.getInteractionsSince(lastStatusTs, userid)) || [];
+    return lastInteractions.length > 0;
+  }
+
   public async update(vectorSearchResult?: any[], userid: string = "") {
     const statusData = await this.getLatestStatus(userid);
+    console.log("statusData", statusData);
     const status = statusData.status;
     const preferences = vectorSearchResult
       ? vectorSearchResult
@@ -39,6 +48,8 @@ class StateManager {
     const age = status!.age ? status!.age + 1 : 1; // 1 tick older!
     const lastInteractions =
       (await this.getInteractionsSince(lastStatusTs, userid)) || [];
+
+    console.log("lastInteractions", lastInteractions);
 
     const prompt = PromptTemplate.fromTemplate(`
       ONLY return JSON as output. no prose. 

@@ -67,6 +67,7 @@ class MemoryManager {
       name: "vectorsearch.complete",
       data: { result: result.data },
     });
+    console.log("vector search result", result);
     return result.data || "";
   }
 
