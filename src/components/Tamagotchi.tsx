@@ -224,7 +224,7 @@ export function Tamagotchi() {
 
   const handleDiscipline = async () => {
     setIsLoading(true);
-    setTamaStatus("Discipling");
+    setTamaStatus("Disciplining");
     setIsInteracting(true);
     try {
       const response = await fetch("/api/interact", {
