@@ -9,7 +9,8 @@ dotenv.config({ path: `.env.local` });
 
 export async function POST(req: Request) {
   const stateManager = await StateManager.getInstance();
-  const state = (await stateManager.getLatestStatus()).status;
+  const latestStatus = await stateManager.getLatestStatus();
+  const state = latestStatus ? latestStatus.status : [];
 
   return NextResponse.json(state);
 }

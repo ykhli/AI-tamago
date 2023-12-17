@@ -54,14 +54,17 @@ export function Tamagotchi() {
     const fetchData = async () => {
       try {
         const response = await fetch("/api/getState", { method: "POST" });
+
         if (response.ok) {
           const jsonData = await response.json();
-          if (!!!jsonData.comment) {
-            jsonData.comment = "No comments";
+          if (!!jsonData) {
+            if (!!!jsonData.comment) {
+              jsonData.comment = "No comments";
+            }
+            setTamagotchiState(jsonData);
+            console.log(jsonData);
+            handleDeath(jsonData, pollInterval);
           }
-          setTamagotchiState(jsonData);
-          console.log(jsonData);
-          handleDeath(jsonData, pollInterval);
         }
       } catch (error) {
         console.error("Error fetching data:", error);

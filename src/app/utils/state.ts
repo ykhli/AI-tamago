@@ -144,7 +144,6 @@ class StateManager {
     if (error) {
       console.error("error: ", error);
     }
-
     return data![0];
   }
 
