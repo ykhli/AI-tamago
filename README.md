@@ -48,6 +48,7 @@ git clone git@github.com:[YOUR_GITHUB_ACCOUNT_NAME]/AI-tamago.git
 ### 2. Install dependencies
 ```
 cd ai-tamago
+npm install
 npm run dev
 ```
 
