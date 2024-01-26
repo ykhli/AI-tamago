@@ -49,7 +49,6 @@ git clone git@github.com:[YOUR_GITHUB_ACCOUNT_NAME]/AI-tamago.git
 ```
 cd ai-tamago
 npm install
-npm run dev
 ```
 
 All client side tamagotchi code is in Tamagotchi.tsx
