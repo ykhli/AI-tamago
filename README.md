@@ -1,5 +1,5 @@
 # AI Tamago 🥚🐣
-An 100% local, LLM-generated and driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! https://ai-tamago.fly.dev/
+A 100% local, LLM-generated and driven virtual pet with thoughts, feelings and feedback. Revive your fond memories of Tamagotchi! https://ai-tamago.fly.dev/
 
 All ascii animations are generated using chatgpt (included prompts in the repo). 
 
@@ -19,7 +19,7 @@ https://github.com/ykhli/AI-tamago/assets/3489963/8d7cb2ac-537a-45d4-98a5-1802b7
 - 🖼️ App logic: [Next.js](https://nextjs.org/)
 - 🧮 Embeddings generation: [Transformer.js](https://github.com/xenova/transformers.js) and [
 all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
-- 🖌️ UI: [Vercel v0](https://v0.dev/)
+- 🖌️ UI: [Magic Patterns](https://www.magicpatterns.com/) and [Vercel v0](https://v0.dev/) 
 
 ### Prod Mode
 All of above, plus: 
