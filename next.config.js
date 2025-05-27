@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverActions: true,
-    serverComponentsExternalPackages: ["sharp", "onnxruntime-node"],
-  },
+  // serverExternalPackages is the new name for serverComponentsExternalPackages in Next.js 15
+  serverExternalPackages: ["sharp", "onnxruntime-node"],
   images: {
     remotePatterns: [
       {
